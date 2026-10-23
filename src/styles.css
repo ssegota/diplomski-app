@@ -210,3 +210,25 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--hawaii); ou
 .process { padding-left: 20px; }
 @media (max-width: 600px) { .guide .step { flex-direction: column; gap: 8px; } }
 .feedback > .link, .upload > .link { align-self: flex-start; text-align: left; }
+
+/* ---------- Izvještaji komisije ---------- */
+.card-highlight { border-color: var(--hawaii); box-shadow: 0 0 0 3px var(--hawaii-bg), var(--shadow); }
+.report { align-items: flex-start; }
+.wrap-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
+.sig-list { list-style: none; padding: 0; margin: 6px 0 0; font-size: 14px; }
+.share-url { margin-top: 6px; overflow-wrap: anywhere; }
+.share-url code { background: var(--hawaii-bg); padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+.report-form { border-top: 1px dashed var(--line); padding-top: 14px; }
+
+/* ---------- Javna stranica za potpis ---------- */
+.sign-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .sign-layout { grid-template-columns: minmax(0, 1fr); } }
+.pdf-stage { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; line-height: 0; }
+.pdf-stage canvas { width: 100%; height: auto; display: block; }
+.pdf-stage.placing { cursor: crosshair; outline: 3px dashed var(--hawaii); outline-offset: -3px; }
+.sig-ghost { position: absolute; pointer-events: none; outline: 1.5px dashed var(--hawaii-dark); background: rgba(0,165,201,.06); }
+.sig-ghost img { width: 100%; height: auto; display: block; }
+.pad-wrap { border: 1.5px dashed var(--line); border-radius: 10px; background: #fff; touch-action: none; line-height: 0; }
+.pad-wrap canvas { width: 100%; height: 170px; display: block; cursor: crosshair; }
+.sign-meta .kv span { min-width: 110px; }
+.step-tag { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--hawaii); color: #fff; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; }

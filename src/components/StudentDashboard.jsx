@@ -5,6 +5,8 @@ import { StatusStepper, StatusBadge, TopicView, TopicFields, FilePicker, Progres
 import Materials from './Materials.jsx';
 import Guide from './Guide.jsx';
 
+const GITHUB_RE = /^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+(\/.*)?$/;
+
 const TABS = [
   ['work', 'Moj rad'],
   ['upload', 'Predaja rada'],
@@ -124,6 +126,7 @@ export function UploadList({ uploads, admin, renderFeedbackForm }) {
             <span className="muted small">{fmtDateTime(u.at)} · {fmtSize(u.size)}</span>
             <DownloadButton fileId={u.fileId} className="btn small">Preuzmi</DownloadButton>
           </div>
+          {u.githubUrl && <div className="small"><span className="muted">GitHub:</span> <a href={u.githubUrl} target="_blank" rel="noreferrer">{u.githubUrl.replace('https://github.com/', '')}</a></div>}
           {u.note && <div className="prewrap small"><span className="muted">{admin ? 'Poruka studenta:' : 'Vaša poruka:'}</span> {u.note}</div>}
           {(u.feedback || u.feedbackFileId) ? (
             <div className="feedback">
@@ -143,6 +146,7 @@ function Upload({ student, setStudent }) {
   const [file, setFile] = useState(null);
   const [kind, setKind] = useState('draft');
   const [note, setNote] = useState('');
+  const [github, setGithub] = useState(student.githubUrl || '');
   const [key, setKey] = useState(0);
   const { progress, upload } = useUploader();
   const a = useAction();
@@ -150,10 +154,11 @@ function Upload({ student, setStudent }) {
   const submit = (e) => {
     e.preventDefault();
     if (!file) return a.setError('Odaberite datoteku.');
+    if (!GITHUB_RE.test(github.trim())) return a.setError('Unesite poveznicu na GitHub repozitorij rada (https://github.com/korisnik/repozitorij).');
     if (kind === 'final' && !confirm('Predajete KONAČNU verziju rada. Status će se promijeniti u „Rad predan”. Nastaviti?')) return;
     a.run(async () => {
       const fileId = await upload(file);
-      setStudent(await api('/me/uploads', { method: 'POST', body: { fileId, kind, note } }));
+      setStudent(await api('/me/uploads', { method: 'POST', body: { fileId, kind, note, githubUrl: github.trim() } }));
       setFile(null); setNote(''); setKey((k) => k + 1);
     }, 'Datoteka je predana; mentor je obaviješten emailom.');
   };
@@ -170,6 +175,7 @@ function Upload({ student, setStudent }) {
           {kind === 'draft' ? 'Dio rada ili cijeli rad za provjeru i komentare.' : `Konačna verzija za ocjenjivanje – najmanje ${MIN_DAYS_BEFORE_DEFENSE} dana prije željenog datuma obrane.`}
         </p>
         <FilePicker file={file} setFile={setFile} label="Datoteka (PDF, DOCX, ZIP…, do 60 MB)" />
+        <label>GitHub repozitorij rada (obavezno)<input type="url" required value={github} onChange={(e) => setGithub(e.target.value)} placeholder="https://github.com/korisnik/repozitorij" /></label>
         <label>Poruka mentoru (neobavezno)<textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Npr. što je novo u ovoj verziji, na što da obrati pažnju…" /></label>
         <Progress value={progress} />
         <Msg error={a.error} ok={a.ok} />

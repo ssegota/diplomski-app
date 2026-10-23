@@ -1,11 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 import Login from './components/Login.jsx';
 import StudentDashboard from './components/StudentDashboard.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
 
+// Javna stranica za potpis izvještaja (bez prijave); pdf.js se učitava samo ovdje.
+const PublicSign = lazy(() => import('./components/PublicSign.jsx'));
+const signToken = window.location.pathname.match(/^\/potpis\/([A-Za-z0-9_-]+)/)?.[1];
+
 export default function App() {
+  if (signToken) return <Suspense fallback={<div className="center pad muted">Učitavanje…</div>}><PublicSign token={signToken} /></Suspense>;
+  return <AuthedApp />;
+}
+
+function AuthedApp() {
   const [config, setConfig] = useState(null);
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +33,10 @@ export default function App() {
     })();
   }, []);
 
-  const onLogin = async ({ token }) => { setToken(token); setMe(await api('/me')); };
+  const onLogin = async ({ token }) => {
+    setToken(token); setMe(await api('/me'));
+    if (window.location.pathname !== '/') window.history.replaceState(null, '', '/');
+  };
 
   if (loading) return <div className="center pad muted">Učitavanje…</div>;
   if (error) return <div className="wrap pad"><div className="alert error">Aplikacija nije dostupna: {error}</div></div>;

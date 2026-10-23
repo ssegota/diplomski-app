@@ -4,6 +4,7 @@ import { STATUSES, STUDY_TYPES, statusLabel, MIN_DAYS_BEFORE_DEFENSE } from '../
 import { StatusStepper, StatusBadge, TopicView, TopicFields, FilePicker, Progress, DownloadButton, Msg, useAction, useUploader } from './common.jsx';
 import { UploadList } from './StudentDashboard.jsx';
 import Materials from './Materials.jsx';
+import Reports from './Reports.jsx';
 
 const enc = encodeURIComponent;
 
@@ -70,6 +71,7 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
         <div>
           <h2 style={{ margin: 0 }}>{s.name}</h2>
           <div className="muted">{s.email}{s.jmbag && ` · JMBAG ${s.jmbag}`} · {STUDY_TYPES[s.type]}{s.program && ` · ${s.program}`}</div>
+          {s.githubUrl && <div className="small">GitHub: <a href={s.githubUrl} target="_blank" rel="noreferrer">{s.githubUrl.replace('https://github.com/', '')}</a></div>}
           {s.desiredDefenseDate && <div className="small">Željeni datum obrane: <b>{fmtDate(s.desiredDefenseDate)}</b> (konačna verzija do {fmtDate(new Date(new Date(s.desiredDefenseDate) - MIN_DAYS_BEFORE_DEFENSE * 86400000).toISOString())})</div>}
         </div>
         <StatusBadge status={s.status} />
@@ -123,6 +125,11 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
       <section className="card">
         <h2>Predaje</h2>
         <UploadList uploads={s.uploads} admin renderFeedbackForm={(u) => <FeedbackForm student={s} upload={u} onSaved={update} />} />
+      </section>
+
+      <section className={`card ${s.status === 'ocjenjivanje_komisija' ? 'card-highlight' : ''}`}>
+        <h2>Izvještaji komisije</h2>
+        <Reports student={s} />
       </section>
 
       <div className="cols">

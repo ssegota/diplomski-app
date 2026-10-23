@@ -56,3 +56,37 @@ export async function listOutbox(limit = 100) {
   const keys = blobs.map((b) => b.key).sort().reverse().slice(0, limit);
   return (await Promise.all(keys.map((k) => st.get(k, { type: 'json' })))).filter(Boolean);
 }
+
+// Izvještaji komisije: report/<id> (JSON), rtoken/<token> → id (javni link),
+// reportpdf/<id> (potpisana verzija), sigimg/<id>/<sigId> (PNG potpisa).
+export const getReport = (id) => store().get(`report/${id}`, { type: 'json' });
+export const saveReport = (r) => store().setJSON(`report/${r.id}`, r);
+export const listReports = () => listJSON('report/');
+export async function getReportByToken(token) {
+  const ref = await store().get(`rtoken/${token}`, { type: 'json' });
+  return ref ? getReport(ref.id) : null;
+}
+export const saveReportToken = (token, id) => store().setJSON(`rtoken/${token}`, { id });
+export const putSignedPdf = (id, bytes) => store().set(`reportpdf/${id}`, bytes);
+export const getSignedPdf = (id) => store().get(`reportpdf/${id}`, { type: 'arrayBuffer' });
+export const putSigImage = (id, sigId, bytes) => store().set(`sigimg/${id}/${sigId}`, bytes);
+export const getSigImage = (id, sigId) => store().get(`sigimg/${id}/${sigId}`, { type: 'arrayBuffer' });
+export async function deleteReport(r) {
+  const st = store();
+  for (const s of r.signatures || []) await st.delete(`sigimg/${r.id}/${s.id}`);
+  await st.delete(`reportpdf/${r.id}`);
+  await st.delete(`rtoken/${r.token}`);
+  await deleteFile(r.fileId);
+  await st.delete(`report/${r.id}`);
+}
+
+export async function readFileBytes(fileId) {
+  const meta = await getFileMeta(fileId);
+  if (!meta) return null;
+  const parts = [];
+  for (let i = 0; i < meta.chunks; i++) parts.push(new Uint8Array(await getChunk(fileId, i)));
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}

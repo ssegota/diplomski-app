@@ -7,7 +7,7 @@ export default function Login({ config, onLogin }) {
   const [busy, setBusy] = useState(false);
   const [dev, setDev] = useState({ email: config.devAdminEmail || '', name: '' });
   const [testPw, setTestPw] = useState('');
-  const showTest = config.testLogin && new URLSearchParams(window.location.search).has('test');
+  const showTest = config.testLogin && (new URLSearchParams(window.location.search).has('test') || window.location.pathname.replace(/\/+$/, '') === '/test');
 
   const login = async (path, body) => {
     setBusy(true); setError('');

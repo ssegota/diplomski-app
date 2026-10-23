@@ -2,6 +2,7 @@ import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEF
 import { issueSession, readSession, verifyGoogle, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
 import { sendMail, notifyAdmin, appUrl, mailConfigured } from '../lib/mail.mjs';
+import { newToken, pageCount, rebuildSignedPdf, thesisUpload } from '../lib/reports.mjs';
 
 export const config = { path: '/api/*' };
 
@@ -12,6 +13,17 @@ const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
 const now = () => new Date().toISOString();
 const str = (v, max = 20000) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+// https://github.com/vlasnik/repo (dopušta i podputanje, npr. /tree/main)
+const GITHUB_RE = /^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+(\/.*)?$/;
+function githubFrom(v) {
+  const url = str(v, 300).replace(/\/+$/, '').replace(/\.git$/, '');
+  if (!GITHUB_RE.test(url)) throw new HttpError(400, 'Unesite ispravnu poveznicu na GitHub repozitorij (https://github.com/korisnik/repozitorij).');
+  return url;
+}
+const pdfResponse = (bytes, name) => new Response(bytes, {
+  headers: { 'content-type': 'application/pdf', 'content-disposition': `inline; filename="${encodeURIComponent(name)}"`, 'cache-control': 'no-store' },
+});
+
 const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('hr-HR') : '—');
 
 // ---------- Pomoćne funkcije za studenta ----------
@@ -137,6 +149,56 @@ async function route(req, user, parts, method) {
     return json(session);
   }
 
+  // --- javni link izvještaja: /api/public/r/<token>[/pdf|/thesis|/thesis/chunks/<n>|/sign] ---
+  if (a === 'public' && b === 'r' && c) {
+    const report = await db.getReportByToken(c);
+    if (!report) throw new HttpError(404, 'Poveznica ne postoji ili je izvještaj uklonjen.');
+    const student = await db.getStudent(report.studentEmail);
+    const thesis = thesisUpload(student);
+    const sub = parts[3];
+    if (!sub && method === 'GET') {
+      return json({
+        title: report.title, createdAt: report.createdAt,
+        signatures: (report.signatures || []).map(({ name, at }) => ({ name, at })),
+        student: student && { name: student.name, type: STUDY_TYPES[student.type], topic: student.topic, githubUrl: student.githubUrl || null },
+        mentorName: process.env.MENTOR_NAME || '',
+        thesis: thesis && { name: thesis.name, size: thesis.size, kind: thesis.kind, at: thesis.at },
+      });
+    }
+    if (sub === 'pdf' && method === 'GET') {
+      const bytes = (await db.getSignedPdf(report.id)) || (await db.readFileBytes(report.fileId));
+      return pdfResponse(bytes, report.fileName || 'izvjestaj.pdf');
+    }
+    if (sub === 'thesis' && method === 'GET') {
+      if (!thesis) throw new HttpError(404, 'Rad još nije predan.');
+      const meta = await db.getFileMeta(thesis.fileId);
+      if (!parts[4]) return json({ name: meta.name, type: meta.type, size: meta.size, chunks: meta.chunks });
+      const buf = await db.getChunk(meta.id, Number(parts[5]));
+      if (!buf) throw new HttpError(404, 'Komad ne postoji.');
+      return new Response(buf, { headers: { 'content-type': 'application/octet-stream' } });
+    }
+    if (sub === 'sign' && method === 'POST') {
+      const name = str(body?.name, 120);
+      if (!name) throw new HttpError(400, 'Upišite ime i prezime.');
+      const m = /^data:image\/png;base64,(.+)$/.exec(String(body?.image || ''));
+      if (!m) throw new HttpError(400, 'Nedostaje slika potpisa.');
+      const png = Buffer.from(m[1], 'base64');
+      if (png.length > 1.5 * 1024 * 1024) throw new HttpError(413, 'Slika potpisa je prevelika.');
+      const num = (v, lo, hi) => { const n = Number(v); if (!(n >= lo && n <= hi)) throw new HttpError(400, 'Neispravan položaj potpisa.'); return n; };
+      if ((report.signatures || []).length >= 12) throw new HttpError(400, 'Dosegnut je najveći broj potpisa.');
+      const sig = { id: db.newId(), name, at: now(), x: num(body.x, 0, 1), y: num(body.y, 0, 1), w: num(body.w, 0.03, 1) };
+      await db.putSigImage(report.id, sig.id, png);
+      report.signatures = [...(report.signatures || []), sig];
+      await rebuildSignedPdf(report);
+      await db.saveReport(report);
+      await notifyAdmin(`Izvještaj potpisan: ${report.title} – ${student?.name || report.studentEmail}`,
+        `${name} je potpisao/la izvještaj „${report.title}” (student: ${student?.name || report.studentEmail}).\n` +
+        `Broj potpisa: ${report.signatures.length}.\n\nPotpisani PDF: ${appUrl()}/api/public/r/${report.token}/pdf\nStranica za potpis: ${appUrl()}/potpis/${report.token}`);
+      return json({ ok: true, signatures: report.signatures.map(({ name, at }) => ({ name, at })) });
+    }
+    throw new HttpError(404, 'Nepostojeća ruta.');
+  }
+
   requireUser();
 
   if (a === 'me' && !b && method === 'GET') {
@@ -178,9 +240,11 @@ async function route(req, user, parts, method) {
   if (a === 'me' && b === 'uploads' && method === 'POST') {
     const s = await requireStudent();
     const kind = body.kind === 'final' ? 'final' : 'draft';
+    const githubUrl = githubFrom(body.githubUrl);
     const meta = await attachFile(str(body.fileId, 40), s.email, s.email);
-    const up = { id: db.newId(), fileId: meta.id, name: meta.name, size: meta.size, kind, note: str(body.note, 4000), at: now(), feedback: '', feedbackFileId: null, feedbackFileName: null, feedbackAt: null };
+    const up = { id: db.newId(), fileId: meta.id, name: meta.name, size: meta.size, kind, githubUrl, note: str(body.note, 4000), at: now(), feedback: '', feedbackFileId: null, feedbackFileName: null, feedbackAt: null };
     s.uploads = [up, ...(s.uploads || [])];
+    s.githubUrl = githubUrl;
     if (kind === 'final') advance(s, 'rad_predan', 'student', 'Predana konačna verzija rada.');
     await db.saveStudent(s);
     let warn = '';
@@ -190,7 +254,7 @@ async function route(req, user, parts, method) {
     }
     await notifyAdmin(`${kind === 'final' ? 'KONAČNA verzija' : 'Verzija za pregled'}: ${s.name}`,
       `${s.name} (${s.email}) predao/la je datoteku „${up.name}” (${kind === 'final' ? 'konačna verzija' : 'na pregled'}).` +
-      (up.note ? `\n\nPoruka studenta:\n${up.note}` : '') + warn + `\n\n${appUrl()}`);
+      `\nGitHub: ${githubUrl}` + (up.note ? `\n\nPoruka studenta:\n${up.note}` : '') + warn + `\n\n${appUrl()}`);
     return json(publicStudent(s));
   }
 
@@ -267,6 +331,7 @@ async function route(req, user, parts, method) {
     if (!c && method === 'GET') return json(s);
     if (!c && method === 'DELETE') {
       for (const u of s.uploads || []) { await db.deleteFile(u.fileId); if (u.feedbackFileId) await db.deleteFile(u.feedbackFileId); }
+      for (const r of (await db.listReports()).filter((r) => r.studentEmail === email)) await db.deleteReport(r);
       await db.deleteStudent(email);
       return json({ ok: true });
     }
@@ -287,6 +352,27 @@ async function route(req, user, parts, method) {
       await db.saveStudent(s);
       if (body.notify !== false) await mailStudentStatus(s, note);
       return json(s);
+    }
+    if (c === 'reports' && method === 'GET') {
+      const list = (await db.listReports()).filter((r) => r.studentEmail === s.email);
+      return json(list.sort((x, y) => (y.createdAt || '').localeCompare(x.createdAt || '')));
+    }
+    if (c === 'reports' && method === 'POST') {
+      const meta = await db.getFileMeta(str(body.fileId, 40));
+      if (!meta || !meta.complete || meta.uploadedBy !== user.email) throw new HttpError(400, 'Datoteka nije učitana.');
+      if (meta.size > db.CHUNK_SIZE) throw new HttpError(400, `Izvještaj mora biti manji od ${db.CHUNK_SIZE / 1048576} MB.`);
+      const bytes = await db.readFileBytes(meta.id);
+      if (new TextDecoder().decode(bytes.slice(0, 5)) !== '%PDF-') throw new HttpError(400, 'Izvještaj mora biti PDF.');
+      let pages;
+      try { pages = await pageCount(bytes); } catch { throw new HttpError(400, 'PDF se ne može pročitati.'); }
+      if (pages !== 1) throw new HttpError(400, `Izvještaj mora imati točno jednu stranicu (ima ${pages}).`);
+      const r = {
+        id: db.newId(), token: newToken(), studentEmail: s.email, title: str(body.title, 200) || 'Izvještaj povjerenstva',
+        fileId: meta.id, fileName: meta.name, signatures: [], createdAt: now(),
+      };
+      await db.saveReportToken(r.token, r.id);
+      await db.saveReport(r);
+      return json(r, 201);
     }
     if (c === 'assign-topic' && method === 'POST') {
       s.topic = { ...topicFrom(body), assignedAt: now() };
@@ -355,6 +441,18 @@ async function route(req, user, parts, method) {
     const s = { ...(await db.getSettings()), deadlines };
     await db.saveSettings(s);
     return json(s);
+  }
+
+  if (a === 'reports' && b) {
+    const r = await db.getReport(b);
+    if (!r) throw new HttpError(404, 'Izvještaj ne postoji.');
+    if (!c && method === 'DELETE') { await db.deleteReport(r); return json({ ok: true }); }
+    if (c === 'signatures' && d && method === 'DELETE') {
+      r.signatures = (r.signatures || []).filter((x) => x.id !== d);
+      await rebuildSignedPdf(r);
+      await db.saveReport(r);
+      return json(r);
+    }
   }
 
   if (a === 'outbox' && method === 'GET') return json(await db.listOutbox());
