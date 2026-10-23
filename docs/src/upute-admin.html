@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<title>Upute za administratora – Završni i diplomski radovi (FIPU)</title>
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+
+<section class="cover">
+  <div>
+    <span class="tag">Fakultet informatike u Puli</span>
+    <h1>Završni i diplomski radovi<br>Upute za administratora</h1>
+    <div class="sub">Vođenje studenata kroz proces izrade rada: teme, statusi, predaje, povratne informacije, materijali, rokovi, obavijesti – i tehničko održavanje aplikacije.</div>
+    <div class="who">Administrator: <b>sbaressis@unipu.hr</b></div>
+  </div>
+  <div class="meta">
+    <div class="url">diplomski-fipu.netlify.app</div>
+    Repozitorij: <b>github.com/ssegota/diplomski-app</b> (privatni)<br>
+    Netlify projekt: <b>diplomski-fipu</b><br>
+    Verzija uputa: listopad 2026.
+  </div>
+</section>
+
+<section class="toc">
+  <h1 class="chap">Sadržaj</h1>
+  <ol>
+    <li>Pregled i pristup</li>
+    <li>Tablica studenata</li>
+    <li>Dodavanje studenata</li>
+    <li>Detalj studenta
+      <ul><li>Status i ručno postavljanje (override) · Prijedlog i zadavanje teme · Predaje i povratne informacije · Podaci, poruka i bilješke · Individualni materijali · Povijest · Brisanje</li></ul></li>
+    <li>Predlošci i materijali</li>
+    <li>Rokovi</li>
+    <li>Poslani mailovi</li>
+    <li>Automatski prijelazi i obavijesti – referenca</li>
+    <li>Preporučeni tijek rada sa studentom</li>
+    <li>Test prijava (testni studentski račun)</li>
+    <li>Tehničko održavanje</li>
+  </ol>
+</section>
+
+<!-- 1 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">1</span>Pregled i pristup</h1>
+  <p>Aplikacija na jednom mjestu vodi sve Vaše mentorirane studente (završni i diplomski radovi) kroz sedam statusa:</p>
+  <p>
+    <span class="badge st-0">Inicijalni kontakt</span> →
+    <span class="badge st-1">Dostavljen prijedlog teme</span> →
+    <span class="badge st-2">Tema zadana</span> →
+    <span class="badge st-3">Tema odabrana – pisanje rada</span> →
+    <span class="badge st-4">Rad predan</span> →
+    <span class="badge st-5">Ocjenjivanje mentora</span> →
+    <span class="badge st-6">Ocjenjivanje komisije</span>
+  </p>
+  <p>Studenti se prijavljuju Google računom @unipu.hr i vide samo svoje podatke. <b>Administratorski pristup ima isključivo račun <code>sbaressis@unipu.hr</code></b> (varijabla <code>ADMIN_EMAILS</code>). Prijavljujete se isto kao studenti – <span class="ui">Prijava putem Googlea</span> – a aplikacija Vas prepoznaje kao administratora (oznaka <span class="badge st-2">admin</span> uz ime).</p>
+  <h2>Administratorske kartice</h2>
+  <table>
+    <tr><th style="width:30%">Kartica</th><th>Namjena</th></tr>
+    <tr><td><span class="ui">Studenti</span></td><td>Tablica svih studenata, filtri, pretraga, dodavanje; klik na redak otvara detalj studenta.</td></tr>
+    <tr><td><span class="ui">Predlošci i materijali</span></td><td>Službeni predlošci i svi materijali (globalni i individualni); dodavanje i brisanje.</td></tr>
+    <tr><td><span class="ui">Rokovi</span></td><td>Uređivanje popisa rokova koji se prikazuje studentima.</td></tr>
+    <tr><td><span class="ui">Upute (pregled)</span></td><td>Pregled kartice „Upute i rokovi” onako kako je vide studenti.</td></tr>
+    <tr><td><span class="ui">Poslani mailovi</span></td><td>Zapis svih obavijesti koje je aplikacija poslala (ili zabilježila).</td></tr>
+  </table>
+</section>
+
+<!-- 2 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">2</span>Tablica studenata</h1>
+  <figure>
+    <img src="img/a-table.png">
+    <figcaption><b>Slika 1.</b> Kartica „Studenti”.</figcaption>
+  </figure>
+  <h2>Stupci</h2>
+  <ul>
+    <li><b>Student</b> – ime i email. Oznaka <span class="badge st-1">novi</span> znači da se student sam prijavio (niste ga Vi dodali) i još je u „Inicijalnom kontaktu”. Oznaka <span class="badge st-0">test</span> označava testni račun.</li>
+    <li><b>Rad</b> – završni ili diplomski.</li>
+    <li><b>Tema</b> – zadani naslov (HR); ako tema još nije zadana, a prijedlog postoji, prikazuje se <i>Prijedlog: …</i> kurzivom.</li>
+    <li><b>Status</b> – trenutni status; ispod narančastom bojom razlog ako nešto čeka Vas (npr. „● 1 nepregledano”).</li>
+    <li><b>Obrana</b> – željeni datum obrane koji je student unio.</li>
+    <li><b>Ažurirano</b> – zadnja promjena zapisa. Tablica je sortirana od najnovije promjene.</li>
+  </ul>
+  <h2>Filtri i pretraga</h2>
+  <ul>
+    <li><b>Čipovi statusa</b> na vrhu filtriraju po statusu; broj pokazuje koliko je studenata u svakom statusu.</li>
+    <li><b>„Čeka mene”</b> prikazuje studente kod kojih ste Vi na potezu: <b>dostavljen prijedlog teme</b>, <b>nepregledane predaje</b> (predaja bez povratne informacije) ili <b>predan rad</b>. Ovo je najbrži način da vidite što treba napraviti.</li>
+    <li><b>Pretraga</b> traži po imenu, emailu, JMBAG-u i naslovu teme (HR i EN).</li>
+    <li><b>Padajući izbornik</b> filtrira završne / diplomske radove.</li>
+  </ul>
+  <figure>
+    <img src="img/a-table-attn.png">
+    <figcaption><b>Slika 2.</b> Filtar „Čeka mene”.</figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">3</span>Dodavanje studenata</h1>
+  <p>Studenta možete dodati ručno ili on može ući sam.</p>
+  <h2>Ručno dodavanje</h2>
+  <ol class="steps">
+    <li>Na kartici <span class="ui">Studenti</span> kliknite <span class="ui">+ Dodaj studenta</span>.</li>
+    <li>Unesite <b>email (@unipu.hr)</b> – mora biti točno onaj kojim će se student prijaviti Googleom – i <b>ime i prezime</b>. JMBAG, vrsta rada, studij i početni status su neobavezni.</li>
+    <li>Kliknite <span class="ui">Dodaj</span>. Student se ne obavještava emailom – kad se prvi put prijavi, vidjet će svoj zapis.</li>
+  </ol>
+  <figure>
+    <img src="img/a-add.png">
+    <figcaption><b>Slika 3.</b> Obrazac za novog studenta. „Početni status” omogućuje unos studenata koji su već u procesu.</figcaption>
+  </figure>
+  <h2>Samoregistracija</h2>
+  <p>Ako se prijavi student s @unipu.hr računom kojeg niste dodali, zapis se stvara automatski sa statusom <span class="badge st-0">Inicijalni kontakt</span> i oznakom <span class="badge st-1">novi</span>, a Vi dobivate email <i>„Novi student u aplikaciji: …”</i>. Ako student ne pripada Vama, jednostavno ga obrišite (poglavlje 4.7).</p>
+  <div class="box tip"><b>Domena</b><p>Prijava je dopuštena za <code>unipu.hr</code> i njezine poddomene (npr. <code>student.unipu.hr</code>). Provjera se radi na poslužitelju preko Googleovog potpisanog tokena, pa se ne može zaobići.</p></div>
+</section>
+
+<!-- 4 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">4</span>Detalj studenta</h1>
+  <p>Klik na redak u tablici otvara detalj studenta. Natrag se vraćate poveznicom <span class="ui">← Svi studenti</span>.</p>
+  <figure>
+    <img src="img/a-detail-top.png">
+    <figcaption><b>Slika 4.</b> Vrh detalja studenta: osnovni podaci, željeni datum obrane s izračunatim rokom za konačnu verziju, status, prijedlog i tema.</figcaption>
+  </figure>
+
+  <h2>4.1 Status i ručno postavljanje (override)</h2>
+  <div class="two">
+    <div>
+      <p>Lijevo je vremenska crta statusa s datumima. Ispod je obrazac <span class="ui">Postavi / pregazi status</span>:</p>
+      <ol class="steps">
+        <li>Odaberite <b>bilo koji</b> status – naprijed ili unatrag.</li>
+        <li>Po želji upišite <b>napomenu</b> – ide studentu u mail i u povijest.</li>
+        <li>Ostavite ili isključite <span class="ui">Obavijesti studenta emailom</span>.</li>
+        <li>Kliknite <span class="ui">Postavi status</span>.</li>
+      </ol>
+      <p>Ručno postavljanje uvijek ima prednost pred automatskim prijelazima. Automatski prijelazi (poglavlje 8) idu <b>samo naprijed</b> – ako ste studenta vratili unatrag, njegova sljedeća akcija ponovno ga pomiče naprijed.</p>
+      <div class="box tip"><b>Tipične situacije</b>
+        <ul>
+          <li>Konačna verzija treba veće ispravke → vratite na <i>Tema odabrana – pisanje rada</i> s napomenom.</li>
+          <li>Rad prihvaćen → <i>Ocjenjivanje mentora</i>, zatim <i>Ocjenjivanje komisije</i> (ovo se uvijek radi ručno).</li>
+          <li>Student je već u procesu od ranije → postavite točan status bez maila.</li>
+        </ul>
+      </div>
+    </div>
+    <figure><img src="img/a-status.png"><figcaption><b>Slika 5.</b> Status i override.</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2 style="margin-top:0">4.2 Prijedlog i zadavanje teme</h2>
+  <p>Ako je student poslao prijedlog, prikazuje se u okviru <span class="ui">Prijedlog studenta</span> (HR/EN prekidač, datum slanja, gumb <span class="ui">Preuzmi prilog</span> ako je priložio datoteku).</p>
+  <figure>
+    <img src="img/a-proposal.png">
+    <figcaption><b>Slika 6.</b> Prijedlog studenta.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li>Kliknite <span class="ui">Kopiraj u temu ↓</span> – naslovi i opisi prijedloga kopiraju se u obrazac <span class="ui">Zadana tema</span>.</li>
+    <li>Uredite <b>Naslov (HR)</b>, <b>Title (EN)</b>, <b>Opis (HR)</b> i <b>Description (EN)</b> – student vidi točno ovo, na oba jezika.</li>
+    <li>Po želji dodajte napomenu (npr. „Temu sam unio u Nastavnički portal”).</li>
+    <li>Kliknite:
+      <ul>
+        <li><span class="ui">Zadaj temu i obavijesti</span> – sprema temu, status postaje <span class="badge st-2">Tema zadana</span> (ako je bio raniji) i student dobiva email s temom i uputom za Studomat; ili</li>
+        <li><span class="ui">Samo spremi</span> – sprema promjene bez maila i bez promjene statusa (za ispravke tipfelera i sl.).</li>
+      </ul>
+    </li>
+  </ol>
+  <figure>
+    <img src="img/a-topic.png">
+    <figcaption><b>Slika 7.</b> Obrazac za zadavanje teme.</figcaption>
+  </figure>
+  <div class="box warn"><b>Ne zaboravite Nastavnički portal</b>
+    <p>Temu morate unijeti i u <b>Nastavnički portal (ISVU)</b> – inače je student ne vidi u Studomatu. Kad student u aplikaciji klikne „Potvrđujem odabir teme”, dobit ćete email da njegov odabir potvrdite u Nastavničkom portalu.</p>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2 style="margin-top:0">4.3 Predaje i povratne informacije</h2>
+  <p>Okvir <span class="ui">Predaje</span> prikazuje sve datoteke koje je student predao (najnovija gore), s oznakom <span class="badge st-2">Na pregled</span> ili <span class="badge st-6">Konačna verzija</span>, datumom, veličinom i porukom studenta. Gumb <span class="ui">Preuzmi</span> preuzima datoteku.</p>
+  <ol class="steps">
+    <li>Kod predaje kliknite <span class="ui">+ Povratna informacija</span>.</li>
+    <li>Upišite komentar i/ili priložite <b>datoteku s komentarima</b> (npr. PDF s bilješkama).</li>
+    <li>Kliknite <span class="ui">Spremi i obavijesti studenta</span>. Student dobiva email i vidi komentar uz predaju.</li>
+  </ol>
+  <p>Postojeću povratnu informaciju možete promijeniti poveznicom <span class="ui">Uredi povratnu informaciju</span> (student ponovno dobiva email). Predaja bez povratne informacije broji se kao „nepregledana” u filtru „Čeka mene”.</p>
+  <figure>
+    <img src="img/a-feedback.png">
+    <figcaption><b>Slika 8.</b> Gornja predaja: otvoren obrazac za povratnu informaciju. Donja: već poslana povratna informacija s datotekom.</figcaption>
+  </figure>
+</section>
+
+<section class="chapter">
+  <h2 style="margin-top:0">4.4 Podaci, poruka i privatne bilješke</h2>
+  <div class="two">
+    <div>
+      <ul>
+        <li><b>Ime, JMBAG, vrsta rada, studij, željeni datum obrane</b> – možete ih ispraviti (JMBAG i datum obrane unosi i student).</li>
+        <li><b>Poruka studentu</b> – prikazuje se na vrhu studentove stranice „Moj rad” dok je ne obrišete. Uključite <span class="ui">Pošalji poruku i emailom</span> ako je želite i poslati.</li>
+        <li><b>Privatne bilješke</b> – vidite ih <b>samo Vi</b>; nikad se ne šalju studentu (poslužitelj ih uklanja iz svih odgovora studentu).</li>
+      </ul>
+      <p>Spremite gumbom <span class="ui">Spremi</span>.</p>
+    </div>
+    <figure><img src="img/a-info.png"><figcaption><b>Slika 9.</b> Podaci i poruka.</figcaption></figure>
+  </div>
+
+  <h2>4.5 Individualni materijali</h2>
+  <p>Materijali dodani ovdje vidljivi su <b>samo tom studentu</b> (npr. literatura ili podaci za njegovu temu). Unesite naslov, opis i datoteku <b>ili</b> poveznicu (URL) pa kliknite <span class="ui">Dodaj</span>. Student dobiva email „Novi materijal: …”.</p>
+  <figure class="half"><img src="img/a-indiv-mat.png"><figcaption><b>Slika 10.</b> Individualni materijali.</figcaption></figure>
+</section>
+
+<section class="chapter">
+  <h2 style="margin-top:0">4.6 Povijest</h2>
+  <p>Na dnu detalja je kronološki zapis svih promjena statusa: vrijeme, status, tko je promjenu napravio (<code>admin</code> ili <code>student</code>) i napomena.</p>
+  <figure><img src="img/a-history.png"><figcaption><b>Slika 11.</b> Povijest promjena.</figcaption></figure>
+  <h2>4.7 Brisanje studenta</h2>
+  <p>Gumb <span class="ui">Obriši studenta</span> (gore desno u detalju) trajno briše studenta i <b>sve njegove predane datoteke i povratne datoteke</b>. Radnja se ne može poništiti; aplikacija traži potvrdu. Individualni materijali tog studenta ostaju na kartici „Predlošci i materijali” i treba ih obrisati zasebno.</p>
+</section>
+
+<!-- 5 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">5</span>Predlošci i materijali</h1>
+  <h2>Službeni predlošci</h2>
+  <p>Na vrhu kartice su službeni predlošci (DOCX i LaTeX predložak rada te predložak prezentacije za obranu, svaki s PDF pregledom). Oni su dio same aplikacije i dolaze iz repozitorija <code>ssegota/sbs-fipu-diplomski</code> (lokalno <code>~/Documents/FIPU/diplomski-template</code>). Kako ih osvježiti opisano je u poglavlju 11.</p>
+  <h2>Materijali</h2>
+  <p>Ispod su svi materijali. Svaki je označen s <span class="badge st-0">Svi studenti</span> ili <span class="badge st-2">Samo: ime studenta</span>.</p>
+  <ol class="steps">
+    <li>U obrascu <span class="ui">Dodaj materijal</span> upišite naslov i (po želji) opis.</li>
+    <li>U polju <span class="ui">Vidljivo</span> odaberite <b>Svi studenti</b> ili određenog studenta.</li>
+    <li>Priložite <b>datoteku</b> (do 60 MB) <b>ili</b> upišite <b>poveznicu</b>.</li>
+    <li>Kliknite <span class="ui">Dodaj</span>. Ako je materijal za jednog studenta, on dobiva email.</li>
+  </ol>
+  <p>Gumb <span class="ui">Obriši</span> uklanja materijal i njegovu datoteku.</p>
+  <figure>
+    <img src="img/a-materials.png" style="max-width:85%">
+    <figcaption><b>Slika 12.</b> Predlošci i materijali (administratorski prikaz).</figcaption>
+  </figure>
+</section>
+
+<!-- 6 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">6</span>Rokovi</h1>
+  <p>Rokovi se studentima prikazuju u kartici „Upute i rokovi”, u koraku 3 („Rokovi i prijava obrane”), sortirani po datumu; prošli rokovi su blijedi.</p>
+  <ol class="steps">
+    <li>Kliknite <span class="ui">+ Dodaj rok</span>.</li>
+    <li>Unesite <b>datum</b>, <b>naziv</b> (npr. „Obrane – prosinački rok”) i po želji <b>napomenu</b> (npr. „Konačna verzija najkasnije 2.12.”).</li>
+    <li>Rok uklanjate gumbom <b>×</b>.</li>
+    <li>Kliknite <span class="ui">Spremi rokove</span> – promjene nisu vidljive studentima dok ih ne spremite.</li>
+  </ol>
+  <figure>
+    <img src="img/a-deadlines.png">
+    <figcaption><b>Slika 13.</b> Uređivanje rokova.</figcaption>
+  </figure>
+  <div class="box tip"><b>Pravilo od 2 tjedna</b>
+    <p>Pravilo „konačna verzija najmanje 14 dana prije obrane” ugrađeno je u aplikaciju: studentu se iz željenog datuma obrane računa krajnji rok, a Vama u mailu o predaji konačne verzije stiže upozorenje ⚠ ako je do obrane manje od 14 dana. Vrijednost se mijenja u <code>shared/statuses.js</code> (<code>MIN_DAYS_BEFORE_DEFENSE</code>).</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">7</span>Poslani mailovi</h1>
+  <p>Svaka obavijest koju aplikacija pošalje zapisuje se ovdje (vrijeme, primatelj, naslov, status). Klik na redak prikazuje cijeli tekst maila.</p>
+  <table>
+    <tr><th>Status</th><th>Značenje</th></tr>
+    <tr><td><b style="color:#1E7B4A">poslano</b></td><td>Mail je uspješno predan SMTP poslužitelju.</td></tr>
+    <tr><td><b>zabilježeno</b></td><td>SMTP nije konfiguriran – mail je samo zapisan, nije poslan.</td></tr>
+    <tr><td><b>greška</b></td><td>Slanje nije uspjelo; zadržite pokazivač iznad za poruku greške.</td></tr>
+  </table>
+  <figure>
+    <img src="img/a-outbox.png">
+    <figcaption><b>Slika 14.</b> Poslani mailovi s otvorenim tekstom jednog maila.</figcaption>
+  </figure>
+  <div class="box warn"><b>Ako na vrhu piše „SMTP nije konfiguriran”</b>
+    <p>Mailovi se ne šalju dok se ne postave varijable <code>SMTP_HOST</code>, <code>SMTP_USER</code> i <code>SMTP_PASS</code> (poglavlje 11). Do tada je ova kartica jedini zapis obavijesti.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">8</span>Automatski prijelazi i obavijesti – referenca</h1>
+  <table>
+    <tr><th style="width:30%">Događaj</th><th style="width:30%">Promjena statusa</th><th>Email</th></tr>
+    <tr><td>Nepoznati student se prijavi</td><td>novi zapis → <span class="badge st-0">Inicijalni kontakt</span></td><td>Vama: „Novi student u aplikaciji”</td></tr>
+    <tr><td>Student pošalje prijedlog teme</td><td>→ <span class="badge st-1">Dostavljen prijedlog teme</span></td><td>Vama: „Prijedlog teme: ime”</td></tr>
+    <tr><td>Vi kliknete „Zadaj temu i obavijesti”</td><td>→ <span class="badge st-2">Tema zadana</span></td><td>Studentu: „Zadana je tema Vašeg rada”</td></tr>
+    <tr><td>Student potvrdi odabir teme</td><td>→ <span class="badge st-3">Tema odabrana – pisanje rada</span></td><td>Vama: „Tema potvrđena: ime”</td></tr>
+    <tr><td>Student preda verziju za pregled</td><td>bez promjene</td><td>Vama: „Verzija za pregled: ime”</td></tr>
+    <tr><td>Student preda konačnu verziju</td><td>→ <span class="badge st-4">Rad predan</span></td><td>Vama: „KONAČNA verzija: ime” (+ ⚠ ako je &lt; 14 dana do obrane)</td></tr>
+    <tr><td>Vi pošaljete povratnu informaciju</td><td>bez promjene</td><td>Studentu: „Povratna informacija: datoteka”</td></tr>
+    <tr><td>Vi ručno postavite status</td><td>→ odabrani status</td><td>Studentu: „Status rada: …” (može se isključiti)</td></tr>
+    <tr><td>Vi dodate individualni materijal</td><td>bez promjene</td><td>Studentu: „Novi materijal: …”</td></tr>
+    <tr><td>Vi spremite poruku uz „Pošalji i emailom”</td><td>bez promjene</td><td>Studentu: „Nova poruka mentora”</td></tr>
+  </table>
+  <p>Automatski prijelazi idu <b>samo naprijed</b> (npr. novi prijedlog teme ne vraća studenta koji već piše rad). Unatrag status možete pomaknuti samo ručno.</p>
+  <p>Obavijesti „Vama” idu na adresu iz <code>NOTIFY_EMAIL</code>, a ako ona nije postavljena, na <code>ADMIN_EMAILS</code>.</p>
+</section>
+
+<!-- 9 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">9</span>Preporučeni tijek rada sa studentom</h1>
+  <ol class="steps">
+    <li><b>Prvi kontakt.</b> Dodajte studenta (ili pričekajte da se sam prijavi). Uputite ga na aplikaciju i PDF upute za studente.</li>
+    <li><b>Prijedlog.</b> Kad stigne mail „Prijedlog teme”, otvorite studenta, pregledajte prijedlog i prilog.</li>
+    <li><b>Tema.</b> „Kopiraj u temu”, doradite HR/EN naslov i opis, unesite temu u <b>Nastavnički portal</b>, zatim „Zadaj temu i obavijesti”.</li>
+    <li><b>Potvrda.</b> Kad stigne mail „Tema potvrđena”, potvrdite odabir teme, mentora i predmeta u Nastavničkom portalu.</li>
+    <li><b>Pisanje.</b> Redovito provjeravajte filtar <b>„Čeka mene”</b>; na svaku predaju odgovorite povratnom informacijom (komentar i/ili PDF s bilješkama). Po potrebi dodajte individualne materijale.</li>
+    <li><b>Konačna verzija.</b> Na mail „KONAČNA verzija” pregledajte rad. Ako treba ispravaka – povratna informacija + status natrag na „pisanje rada” s napomenom. Ako je prihvaćen – status „Ocjenjivanje mentora”.</li>
+    <li><b>Komisija.</b> Kad rad ide povjerenstvu – status „Ocjenjivanje komisije”.</li>
+    <li><b>Rokovi.</b> Na početku semestra ažurirajte karticu „Rokovi” (rokovi obrana i krajnji datumi predaje).</li>
+  </ol>
+</section>
+
+<!-- 10 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">10</span>Test prijava (testni studentski račun)</h1>
+  <p>Za isprobavanje studentskog dijela bez pravog studenta postoji <b>skrivena test prijava</b> za jedan fiksni račun: <code>test.student@unipu.hr</code>.</p>
+  <ol class="steps">
+    <li>Otvorite <b>https://diplomski-fipu.netlify.app/?test</b> (u <b>privatnom/incognito</b> prozoru ako ste istovremeno prijavljeni kao admin).</li>
+    <li>Ispod Google gumba pojavljuje se okvir <span class="ui">Test prijava</span>. Upišite lozinku i kliknite <span class="ui">Prijavi se kao test student</span>.</li>
+  </ol>
+  <figure class="half"><img src="img/login-test.png"><figcaption><b>Slika 15.</b> Okvir za test prijavu (vidljiv samo uz <code>?test</code> u adresi).</figcaption></figure>
+  <ul>
+    <li>Lozinka je spremljena kao tajna varijabla <code>TEST_LOGIN_PASSWORD</code> na Netlifyju (Project configuration → Environment variables). Promijenite je naredbom <code>netlify env:set TEST_LOGIN_PASSWORD "nova" --secret --context production</code> i ponovnim deployem.</li>
+    <li>Test račun je uvijek <b>student</b>, nikada administrator; drugi emailovi se ovim putem ne mogu prijaviti.</li>
+    <li>U tablici je označen s <span class="badge st-0">test</span>. Mailovi namijenjeni test studentu stižu <b>Vama</b>, s prefiksom <code>[TEST]</code> u naslovu – tako vidite i studentske obavijesti.</li>
+    <li>Test studenta možete slobodno obrisati; pri sljedećoj test prijavi stvara se ponovno, kao „Inicijalni kontakt”.</li>
+    <li><b>Isključivanje:</b> obrišite varijablu <code>TEST_LOGIN_PASSWORD</code> (ili <code>TEST_STUDENT_EMAIL</code>) na Netlifyju i ponovno deployajte.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">11</span>Tehničko održavanje</h1>
+  <h2>Arhitektura</h2>
+  <ul>
+    <li><b>Frontend:</b> Vite + React (<code>src/</code>), boje FIPU.</li>
+    <li><b>Backend:</b> jedna Netlify funkcija <code>netlify/functions/api.mjs</code> na ruti <code>/api/*</code>.</li>
+    <li><b>Podaci i datoteke:</b> Netlify Blobs, store <code>diplomski</code> (studenti, materijali, rokovi, datoteke u komadima od 4 MB, zapis mailova). Najveća datoteka: 60 MB.</li>
+    <li><b>Prijava:</b> Google Identity Services; poslužitelj provjerava potpisani token i domenu, a zatim izdaje vlastitu sesiju (7 dana) potpisanu s <code>SESSION_SECRET</code>.</li>
+    <li><b>Mail:</b> SMTP preko nodemailera.</li>
+  </ul>
+  <h2>Varijable okruženja (Netlify)</h2>
+  <table>
+    <tr><th style="width:32%">Varijabla</th><th>Opis</th></tr>
+    <tr><td><code>SESSION_SECRET</code></td><td>Tajni ključ za potpis sesija. Promjena odjavljuje sve korisnike.</td></tr>
+    <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>OAuth klijent (isti kao MarendApp/menzapp).</td></tr>
+    <tr><td><code>ADMIN_EMAILS</code></td><td><code>sbaressis@unipu.hr</code> (više adresa odvojiti zarezom).</td></tr>
+    <tr><td><code>ALLOWED_DOMAIN</code></td><td><code>unipu.hr</code></td></tr>
+    <tr><td><code>APP_URL</code></td><td>Poveznica u mailovima: <code>https://diplomski-fipu.netlify.app</code></td></tr>
+    <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>MAIL_FROM</code></td><td>Slanje mailova (npr. <code>smtp.gmail.com</code>, 465, @unipu.hr adresa i Google <b>app lozinka</b>).</td></tr>
+    <tr><td><code>NOTIFY_EMAIL</code></td><td>Neobavezno: kamo idu obavijesti adminu.</td></tr>
+    <tr><td><code>TEST_STUDENT_EMAIL</code>, <code>TEST_LOGIN_PASSWORD</code></td><td>Test prijava (poglavlje 10).</td></tr>
+  </table>
+  <div class="box tip"><b>Uključivanje slanja mailova (Gmail)</b>
+    <p>U Google računu uključite dvofaktorsku autentifikaciju i izradite <b>App password</b>, zatim:</p>
+    <p><code>netlify env:set SMTP_HOST smtp.gmail.com</code><br>
+    <code>netlify env:set SMTP_PORT 465</code><br>
+    <code>netlify env:set SMTP_USER sbaressis@unipu.hr</code><br>
+    <code>netlify env:set SMTP_PASS "app-lozinka" --secret --context production</code><br>
+    <code>netlify deploy --build --prod</code></p>
+  </div>
+  <h2>Google OAuth</h2>
+  <p>U Google Cloud Console → Google Auth Platform → Clients → (klijent <code>254539270785-…</code>) → <b>Authorized JavaScript origins</b> moraju biti <code>https://diplomski-fipu.netlify.app</code> i, za lokalni rad, <code>http://localhost:8888</code>. Ako se promijeni adresa aplikacije, dodajte novu.</p>
+
+  <h2>Deploy</h2>
+  <ul>
+    <li><b>Automatski:</b> svaki push na granu <code>main</code> repozitorija <code>ssegota/diplomski-app</code> pokreće build na Netlifyju (Netlify GitHub aplikacija mora imati pristup repozitoriju).</li>
+    <li><b>Ručno:</b> u mapi projekta <code>netlify deploy --build --prod</code>.</li>
+    <li>Promjene varijabli okruženja vrijede tek nakon novog deploya.</li>
+  </ul>
+  <h2>Lokalni razvoj</h2>
+  <p><code>cd ~/Documents/FIPU/Diplomski-App &amp;&amp; npm install &amp;&amp; netlify dev --offline</code> → <code>http://localhost:8888</code>. Lokalna datoteka <code>.env</code> (ne ide u git) uključuje <code>DEV_LOGIN=true</code>: na stranici za prijavu pojavljuje se „DEV prijava” kojom se možete prijaviti bilo kojim emailom. Na produkciji je DEV prijava uvijek isključena. Lokalni podaci su odvojeni od produkcijskih.</p>
+  <h2>Osvježavanje predložaka</h2>
+  <p>Nakon izmjene predložaka u <code>~/Documents/FIPU/diplomski-template</code>: <code>npm run sync-templates</code>, zatim commit i push (ili ručni deploy).</p>
+  <h2>Sigurnosna kopija podataka</h2>
+  <p>Aplikacija nema automatski backup. Podatke možete pregledati i preuzeti Netlify CLI-jem, npr. <code>netlify blobs:list diplomski</code> i <code>netlify blobs:get diplomski "student/ime@unipu.hr"</code>.</p>
+  <h2>Upute u PDF-u</h2>
+  <p>Izvori ovih uputa su u <code>docs/src/</code> (HTML + slike); PDF-ovi su u <code>docs/</code>.</p>
+</section>
+
+</body>
+</html>

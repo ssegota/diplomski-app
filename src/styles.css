@@ -209,3 +209,4 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--hawaii); ou
 .guide li { margin-bottom: 6px; }
 .process { padding-left: 20px; }
 @media (max-width: 600px) { .guide .step { flex-direction: column; gap: 8px; } }
+.feedback > .link, .upload > .link { align-self: flex-start; text-align: left; }
