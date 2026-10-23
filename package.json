@@ -1,0 +1,24 @@
+{
+  "name": "diplomski-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sync-templates": "node scripts/sync-templates.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6",
+    "@react-oauth/google": "^0.13.5",
+    "google-auth-library": "^10.6.2",
+    "nodemailer": "^7.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^7.3.1"
+  }
+}

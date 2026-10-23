@@ -1,0 +1,21 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888
+  framework = "#custom"
+
+# SPA fallback (API ide preko funkcije na /api/*)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

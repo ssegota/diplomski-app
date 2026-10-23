@@ -1,0 +1,643 @@
+% =====================================================================
+%  PREDLOŽAK ZA ZAVRŠNI I DIPLOMSKI RAD  —  LaTeX inačica
+%  Sve je u jednoj datoteci. Prevedi s:
+%      pdflatex predlozak-zavrsni-diplomski
+%      bibtex   predlozak-zavrsni-diplomski
+%      pdflatex predlozak-zavrsni-diplomski
+%      pdflatex predlozak-zavrsni-diplomski
+%  (Na Overleafu je dovoljno pritisnuti "Recompile" 2–3 puta.)
+%
+%  NE MIJENJAJ preambulu osim onoga što je označeno s  <<< UREDI >>>.
+% =====================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ---------------------------------------------------------------------
+% <<< UREDI >>>  PODACI O RADU  — mijenjaj samo desnu stranu u vitičastim zagradama
+% ---------------------------------------------------------------------
+\newcommand{\Sveuciliste}{Sveučilište Jurja Dobrile u Puli}
+\newcommand{\Fakultet}{Fakultet informatike u Puli}
+\newcommand{\Odjel}{Naziv studija}
+\newcommand{\VrstaRada}{DIPLOMSKI RAD}          % ZAVRŠNI RAD / DIPLOMSKI RAD
+\newcommand{\NaslovHR}{Naslov rada na hrvatskom jeziku}
+\newcommand{\NaslovEN}{Title of the thesis in English}
+\newcommand{\NaslovKratki}{Skraćeni naslov rada}  % ide u zaglavlje stranice
+\newcommand{\Student}{Ime Prezime}
+\newcommand{\JMBAG}{JMBAG: 0000000000}
+\newcommand{\Mentor}{doc. dr. sc. Sandi Baressi Šegota}
+\newcommand{\Komentor}{}                         % ostavi prazno ako ga nema
+\newcommand{\MjestoGodina}{Pula, rujan 2026.}
+
+% ---------------------------------------------------------------------
+%  PAKETI
+% ---------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}                 % Times (parnjak Times New Romanu iz DOCX-a)
+\usepackage[scaled=0.92]{helvet}
+\usepackage{courier}
+\usepackage{microtype}
+
+% Hrvatski jezik: koristi se ako je paket instaliran (Overleaf, TeX Live full).
+% Ako nije, dokument se svejedno prevodi — samo bez hrvatskog prijeloma riječi.
+\IfFileExists{croatian.ldf}{\usepackage[croatian]{babel}}{}
+
+\usepackage[a4paper,left=3cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+
+% ---------------------------------------------------------------------
+%  BOJE  (Hawaiian blue = službena boja fakulteta)
+% ---------------------------------------------------------------------
+\definecolor{fakplava}{HTML}{00C3E3}   % akcentna boja: linije, brojevi, zaglavlje tablice
+\definecolor{fakplavatamna}{HTML}{00788C} % tamnija inačica za sitan tekst i poveznice
+\definecolor{sivasvijetla}{HTML}{F2F4F5}
+\definecolor{sivatamna}{HTML}{58595B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=fakplavatamna,
+  urlcolor=fakplavatamna,
+  pdftitle={\NaslovHR},
+  pdfauthor={\Student}
+}
+
+% ---------------------------------------------------------------------
+%  OSNOVNI PRIJELOM
+% ---------------------------------------------------------------------
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\tolerance=2000
+\emergencystretch=1.5em
+\raggedbottom
+
+\setlength{\headheight}{15pt}
+\renewcommand{\headrule}{{\color{fakplava}\hrule height 0.6pt}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{sivatamna}\NaslovKratki}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.6pt}
+% ista glava i na stranicama na kojima počinje poglavlje
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[L]{\small\sffamily\color{sivatamna}\NaslovKratki}%
+  \fancyfoot[C]{\small\thepage}%
+  \renewcommand{\headrulewidth}{0.6pt}}
+
+% ---------------------------------------------------------------------
+%  NASLOVI POGLAVLJA I ODJELJAKA
+% ---------------------------------------------------------------------
+\titleformat{\chapter}[block]
+  {\normalfont\sffamily\bfseries\fontsize{20}{24}\selectfont\raggedright}
+  {\color{fakplava}\thechapter\hspace{0.6em}}
+  {0pt}
+  {}
+  [\vspace{5pt}{\color{fakplava}\titlerule[2pt]}]
+\titlespacing*{\chapter}{0pt}{0pt}{26pt}
+
+\titleformat{\section}
+  {\normalfont\sffamily\bfseries\fontsize{14}{17}\selectfont}
+  {\color{fakplava}\thesection}{10pt}{}
+\titlespacing*{\section}{0pt}{18pt}{6pt}
+
+\titleformat{\subsection}
+  {\normalfont\sffamily\bfseries\fontsize{12}{15}\selectfont}
+  {\color{fakplava}\thesubsection}{8pt}{}
+\titlespacing*{\subsection}{0pt}{14pt}{4pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\sffamily\itshape\bfseries\fontsize{12}{15}\selectfont}
+  {\thesubsubsection}{8pt}{}
+\titlespacing*{\subsubsection}{0pt}{12pt}{4pt}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}          % u Sadržaju se prikazuju razine 1.  i  1.1
+
+% Numeracija slika, tablica i jednadžbi po poglavljima: 2.1, 2.2, ...
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+\counterwithin{equation}{chapter}
+
+% ---------------------------------------------------------------------
+%  POTPISI (CAPTIONI)
+% ---------------------------------------------------------------------
+\captionsetup{
+  font={small},
+  labelfont={bf},
+  labelsep=period,
+  justification=centering,
+  singlelinecheck=true,
+  skip=8pt
+}
+\captionsetup[table]{position=top,skip=6pt}
+
+% ---------------------------------------------------------------------
+%  TABLICE
+% ---------------------------------------------------------------------
+\renewcommand{\arraystretch}{1.25}
+\newcommand{\zaglavlje}[1]{\textbf{\textcolor{white}{#1}}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% ---------------------------------------------------------------------
+%  KOD (LISTINZI)
+% ---------------------------------------------------------------------
+\lstdefinestyle{fak}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{sivasvijetla},
+  keywordstyle=\color{fakplavatamna}\bfseries,
+  commentstyle=\color{sivatamna}\itshape,
+  stringstyle=\color{sivatamna},
+  numbers=left, numberstyle=\scriptsize\color{sivatamna}, numbersep=9pt,
+  frame=leftline, framerule=2.5pt, rulecolor=\color{fakplava},
+  framexleftmargin=26pt, xleftmargin=26pt,
+  breaklines=true, showstringspaces=false,
+  captionpos=b, aboveskip=10pt, belowskip=6pt,
+  literate={č}{{\v{c}}}1 {ć}{{\'c}}1 {ž}{{\v{z}}}1 {š}{{\v{s}}}1 {đ}{{d}}1
+}
+\lstset{style=fak}
+\renewcommand{\lstlistingname}{Programski isječak}
+
+% Okvir s napomenom (koristi se u uputama, slobodno obriši)
+\newcommand{\napomena}[1]{%
+  \par\vspace{6pt}
+  \noindent\begin{tabular}{@{}p{3pt}@{\hspace{10pt}}p{\dimexpr\textwidth-13pt\relax}@{}}
+  \cellcolor{fakplava} & \small #1
+  \end{tabular}\par\vspace{6pt}}
+
+% Pomoćna naredba: ispiši drugi argument samo ako prvi nije prazan
+\makeatletter
+\newcommand{\akoNijePrazno}[2]{\begingroup\edef\@tempa{#1}%
+  \ifx\@tempa\@empty\endgroup\else\endgroup #2\fi}
+\makeatother
+
+% Placeholder umjesto slike — zamijeni ga s \includegraphics
+\newcommand{\mjestoZaSliku}[2][0.6\textwidth]{%
+  \fcolorbox{fakplava}{sivasvijetla}{%
+    \begin{minipage}[c][#2][c]{#1}
+      \centering\sffamily\small\color{sivatamna}
+      MJESTO ZA SLIKU\\[2pt]
+      {\footnotesize zamijeni s \texttt{\textbackslash includegraphics}}
+    \end{minipage}}}
+
+% ---------------------------------------------------------------------
+%  HRVATSKI NAZIVI
+% ---------------------------------------------------------------------
+\AtBeginDocument{%
+  \renewcommand{\contentsname}{Sadržaj}
+  \renewcommand{\listfigurename}{Popis slika}
+  \renewcommand{\listtablename}{Popis tablica}
+  \renewcommand{\bibname}{Literatura}
+  \renewcommand{\figurename}{Slika}
+  \renewcommand{\tablename}{Tablica}
+  \renewcommand{\chaptername}{Poglavlje}
+  \renewcommand{\appendixname}{Prilog}
+}
+
+% =====================================================================
+%  BAZA LITERATURE — ugrađena u istu datoteku da sve ostane u jednom fileu.
+%  Dodaj svoje unose ovdje. BibTeX ih sam sortira i formatira.
+% =====================================================================
+\begin{filecontents*}[overwrite]{\jobname.bib}
+@book{knjiga2021,
+  author    = {Prezime, Ime and Drugi, Autor},
+  title     = {Naslov knjige: podnaslov ako postoji},
+  publisher = {Naziv nakladnika},
+  address   = {Zagreb},
+  year      = {2021}
+}
+@article{clanak2023,
+  author  = {Horvat, Ana and Kovačević, Marko},
+  title   = {Naslov članka u znanstvenom časopisu},
+  journal = {Naziv časopisa},
+  volume  = {42},
+  number  = {3},
+  pages   = {115--129},
+  year    = {2023},
+  doi     = {10.1000/primjer.2023.42.115}
+}
+@inproceedings{konferencija2022,
+  author    = {Novak, Ivan},
+  title     = {Naslov rada s konferencije},
+  booktitle = {Zbornik radova 15. međunarodne konferencije o nečemu},
+  pages     = {44--51},
+  address   = {Pula},
+  year      = {2022}
+}
+@phdthesis{disertacija2020,
+  author = {Babić, Petra},
+  title  = {Naslov doktorske disertacije},
+  school = {Sveučilište Jurja Dobrile u Puli, Fakultet informatike u Puli},
+  year   = {2020}
+}
+@misc{mreznistvor2024,
+  author       = {{Državni zavod za statistiku}},
+  title        = {Naslov mrežne stranice ili dokumenta},
+  howpublished = {\url{https://www.primjer.hr/dokument}},
+  year         = {2024},
+  note         = {pristupljeno 15. rujna 2026.}
+}
+@manual{norma2019,
+  author       = {{International Organization for Standardization}},
+  title        = {ISO 690:2010 Information and documentation — Guidelines for bibliographic references},
+  organization = {ISO},
+  address      = {Geneva},
+  year         = {2010}
+}
+\end{filecontents*}
+
+% =====================================================================
+\begin{document}
+% =====================================================================
+
+% ---------------------------------------------------------------------
+%  NASLOVNICA
+% ---------------------------------------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\sffamily
+{\large \Sveuciliste\par}
+{\large\bfseries \Fakultet\par}
+{\normalsize \Odjel\par}
+
+\vspace{10pt}
+{\color{fakplava}\rule{\textwidth}{2pt}}
+
+\vspace*{0.22\textheight}
+{\large\bfseries\color{sivatamna} \VrstaRada\par}
+\vspace{18pt}
+{\fontsize{22}{27}\selectfont\bfseries \NaslovHR\par}
+\vspace{10pt}
+{\fontsize{13}{16}\selectfont\itshape\color{sivatamna} \NaslovEN\par}
+\vfill
+
+\begin{minipage}[t]{0.46\textwidth}
+  \raggedright\normalsize
+  \textbf{Student:}\\
+  \Student\\
+  {\small \JMBAG}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\textwidth}
+  \raggedleft\normalsize
+  \textbf{Mentor:}\\
+  \Mentor
+  \akoNijePrazno{\Komentor}{\\[6pt]\textbf{Komentor:}\\ \Komentor}
+\end{minipage}
+
+\vspace{28pt}
+{\color{fakplava}\rule{\textwidth}{2pt}}
+\vspace{8pt}
+{\normalsize \MjestoGodina\par}
+\end{titlepage}
+
+% ---------------------------------------------------------------------
+%  IZJAVA
+% ---------------------------------------------------------------------
+\chapter*{Izjava o samostalnosti}
+\addcontentsline{toc}{chapter}{Izjava o samostalnosti}
+
+Izjavljujem da sam ovaj rad izradio/la samostalno, koristeći se znanjem stečenim tijekom studija i navedenom literaturom, te uz stručno vodstvo mentora.
+
+\vspace{40pt}
+\hfill\begin{minipage}{0.45\textwidth}
+\centering
+\rule{\linewidth}{0.4pt}\\
+\small \Student
+\end{minipage}
+
+\napomena{Ako fakultet propisuje vlastiti obrazac izjave ili stranicu sa zadatkom rada, umetni ga ovdje umjesto ovog teksta.}
+
+% ---------------------------------------------------------------------
+%  ZAHVALA
+% ---------------------------------------------------------------------
+\chapter*{Zahvala}
+\addcontentsline{toc}{chapter}{Zahvala}
+
+Ovdje dolazi zahvala mentoru, obitelji, kolegama ili institucijama koje su podržale izradu rada. Zahvala nije obavezna — ako je ne želiš, obriši cijelo ovo poglavlje.
+
+% ---------------------------------------------------------------------
+%  SAŽETAK
+% ---------------------------------------------------------------------
+\chapter*{Sažetak}
+\addcontentsline{toc}{chapter}{Sažetak}
+
+Sažetak je samostalan tekst od 150 do 250 riječi koji se čita bez ostatka rada. U njemu u pravilu ide po jedna do dvije rečenice o svakome od sljedećeg: problem i motivacija, cilj rada, primijenjena metodologija, glavni rezultati i zaključak. U sažetku se ne citira literatura, ne koriste se kratice koje nisu odmah objašnjene i ne upućuje se na slike ili tablice iz rada.
+
+\vspace{6pt}
+\noindent\textbf{Ključne riječi:} prva ključna riječ; druga; treća; četvrta; peta
+
+\vspace{26pt}
+\noindent{\sffamily\bfseries\fontsize{20}{24}\selectfont Abstract}\par
+\vspace{5pt}
+\noindent{\color{fakplava}\rule{\textwidth}{2pt}}
+\vspace{4pt}
+
+The abstract is a direct translation of the Croatian summary — same length, same structure, same content. Have it proofread: this is the part of your thesis most likely to be read by someone outside your faculty.
+
+\vspace{6pt}
+\noindent\textbf{Keywords:} first keyword; second; third; fourth; fifth
+
+% ---------------------------------------------------------------------
+%  SADRŽAJ I POPISI
+% ---------------------------------------------------------------------
+\tableofcontents
+\listoffigures
+\listoftables
+
+% =====================================================================
+\chapter{Kako se koristi ovaj predložak}
+% =====================================================================
+
+Ovaj dokument je istovremeno predložak i uputa. Sve što vidiš — od naslovnice do popisa literature — već je oblikovano prema pravilima koja slijede. Tvoj posao je zamijeniti tekst uputa vlastitim sadržajem i ne dirati oblikovanje.
+
+\napomena{Prije predaje obriši sva poglavlja s uputama (poglavlja 1 do 6) i zadrži samo strukturu. Popis za provjeru prije predaje nalazi se na kraju, u poglavlju~\ref{pog:predaja}.}
+
+\section{Osnovna pravila prijeloma}
+
+Sljedeće postavke su već ugrađene u predložak i ne mijenjaju se:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=4pt]
+  \item Format stranice A4, margine: lijevo 3~cm, desno 2{,}5~cm, gore i dolje 2{,}5~cm. Šira lijeva margina ostavlja mjesta za uvez.
+  \item Osnovni tekst: Times New Roman 12~pt, prored 1{,}5, obostrano poravnanje.
+  \item Naslovi: bezserifno pismo (Arial/Helvetica), broj poglavlja u boji fakulteta.
+  \item Zaglavlje: skraćeni naslov rada uz tanku vodoravnu liniju, na svakoj stranici osim naslovnice.
+  \item Broj stranice: sredina podnožja. Naslovnica se ne numerira.
+  \item Odlomci se odvajaju razmakom, bez uvlake prvog retka.
+\end{itemize}
+
+\section{Jezik i stil}
+
+Rad se piše u trećem licu ili bezličnim oblicima: \emph{,,mjerenja su provedena''}, a ne \emph{,,proveo sam mjerenja''}. Piše se u prošlom vremenu kad se opisuje što je napravljeno, a u prezentu kad se iznose činjenice i zaključci.
+
+Kratice se pri prvom spominjanju pišu u punom obliku, a skraćenica se navodi u zagradi: \emph{umjetna inteligencija (UI)}. Nakon toga se koristi samo kratica. Decimalni se brojevi u hrvatskom pišu zarezom (3{,}14), a između broja i mjerne jedinice ide razmak (25~kg, 10~\%).
+
+\section{Opseg rada}
+
+Okvirni opseg je 30--40 stranica za završni i 50--70 stranica za diplomski rad, ne računajući priloge. Mjerodavan je pravilnik tvojeg fakulteta — ako se razlikuje od ovih brojeva, vrijedi pravilnik.
+
+% =====================================================================
+\chapter{Struktura rada i naslovi poglavlja}
+% =====================================================================
+
+\section{Redoslijed dijelova rada}
+
+Rad se slaže ovim redoslijedom: naslovnica, izjava o samostalnosti, zahvala (nije obavezna), sažetak s ključnim riječima na hrvatskom i engleskom, sadržaj, popis slika, popis tablica, popis kratica (ako ih ima puno), glavni dio rada, literatura i prilozi.
+
+Glavni dio rada ima ustaljenu strukturu: \textbf{Uvod} (kontekst, problem, cilj i struktura rada), \textbf{Pregled područja} (što se već zna i što su drugi napravili), \textbf{Metodologija} (kako si to napravio, dovoljno detaljno da netko može ponoviti), \textbf{Rezultati} (što je izašlo, bez tumačenja), \textbf{Rasprava} (što to znači i koja su ograničenja) i \textbf{Zaključak} (odgovor na cilj iz uvoda i prijedlog daljnjeg rada).
+
+\section{Razine naslova}
+
+Koriste se najviše tri razine numeriranih naslova:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=4pt]
+  \item \textbf{prva razina} — naslov poglavlja (ovdje: \emph{2 Struktura rada i naslovi poglavlja}); uvijek počinje na novoj stranici,
+  \item \textbf{druga razina} — naslov odjeljka (ovdje: \emph{2.2 Razine naslova}); dijeli poglavlje na logičke cjeline,
+  \item \textbf{treća razina} — naslov pododjeljka (ovdje: \emph{2.2.1}); koristi se samo kad odjeljak stvarno treba dodatno razlomiti.
+\end{itemize}
+
+Četvrta razina naslova znači da je strukturu potrebno pojednostaviti, a ne produbiti. Iza naslova uvijek slijedi tekst — nikad odmah novi naslov.
+
+\subsection{Primjer pododjeljka}
+
+Ovo je naslov treće razine. U Sadržaju se prikazuju prve tri razine, dublje se ne prikazuju.
+
+\napomena{U LaTeX inačici naslove pišeš naredbama \texttt{\textbackslash chapter}, \texttt{\textbackslash section} i \texttt{\textbackslash subsection}. Numeraciju nikada ne upisuj ručno — LaTeX je generira sam, kao i Sadržaj.}
+
+\section{Nabrajanja}
+
+Nenumerirano nabrajanje koristi se kad redoslijed nije bitan:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=4pt]
+  \item prva stavka nabrajanja,
+  \item druga stavka nabrajanja,
+  \item posljednja stavka nabrajanja.
+\end{itemize}
+
+Numerirano nabrajanje koristi se kad redoslijed jest bitan, na primjer za korake postupka:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=4pt]
+  \item prvi korak postupka,
+  \item drugi korak postupka,
+  \item treći korak postupka.
+\end{enumerate}
+
+Stavke počinju malim slovom i završavaju zarezom, a posljednja točkom — osim ako su stavke pune rečenice, u kojem slučaju svaka počinje velikim slovom i završava točkom.
+
+% =====================================================================
+\chapter{Slike, tablice i jednadžbe}
+% =====================================================================
+
+Svaka slika i svaka tablica mora biti numerirana, imati potpis i biti spomenuta u tekstu \emph{prije} nego se pojavi. Ako nešto nije spomenuto u tekstu, ne ide u rad.
+
+\section{Slike}
+
+Potpis slike ide \textbf{ispod} slike, centriran, veličine 10~pt. Numeracija je po poglavljima: prva slika u trećem poglavlju je Slika~3.1. Na sliku se u tekstu upućuje ovako: ,,Shema sustava prikazana je na slici~\ref{sl:primjer}.''
+
+\begin{figure}[H]
+  \centering
+  \mjestoZaSliku[0.62\textwidth]{4.2cm}
+  \caption{Kratak i opisan potpis slike koji se može razumjeti bez čitanja teksta}
+  \label{sl:primjer}
+\end{figure}
+
+Ako slika nije tvoja, izvor se navodi na kraju potpisa, a izvor mora biti u popisu literature:
+
+\begin{figure}[H]
+  \centering
+  \mjestoZaSliku[0.62\textwidth]{3.4cm}
+  \caption{Potpis preuzete slike. Izvor: \citep{clanak2023}}
+  \label{sl:preuzeta}
+\end{figure}
+
+Praktična pravila za slike: rezolucija najmanje 300~dpi za rasterske slike, a dijagrame i grafove izvozi kao vektorsku grafiku (PDF ili SVG) jer ostaju oštri pri svakom povećanju. Tekst na slici ne smije biti manji od 9~pt. Grafovi moraju imati označene osi s mjernim jedinicama. Ne koristi boju kao jedini nositelj informacije — rad se često ispisuje crno-bijelo, pa razlikuj krivulje i vrstom linije ili oznakom.
+
+\napomena{U LaTeXu sliku umećeš umjesto sivog okvira iznad, naredbom:\newline
+\texttt{\footnotesize\textbackslash includegraphics[width=0.7\textbackslash textwidth]\{slike/naziv.pdf\}}\newline
+Naredba \texttt{\textbackslash label} mora doći \emph{poslije} \texttt{\textbackslash caption}, inače referenca pokazuje na krivi broj.}
+
+\section{Tablice}
+
+Potpis tablice ide \textbf{iznad} tablice. Numeracija je također po poglavljima. Tablice nemaju okomite crte — koriste se samo vodoravne linije, i to tri: iznad zaglavlja, ispod zaglavlja i na kraju tablice. Zaglavlje je u boji fakulteta s bijelim podebljanim tekstom.
+
+\begin{table}[H]
+  \centering
+  \caption{Kratak potpis tablice koji objašnjava što se u njoj nalazi}
+  \label{tab:primjer}
+  \small
+  \begin{tabular}{L{4.2cm} C{2.6cm} R{2.6cm} R{2.6cm}}
+    \toprule
+    \rowcolor{fakplava}
+    \zaglavlje{Naziv uzorka} & \zaglavlje{Oznaka} & \zaglavlje{Masa (g)} & \zaglavlje{Udio (\%)} \\
+    \midrule
+    Prvi uzorak    & A-01 & 12{,}40 & 38{,}2 \\
+    Drugi uzorak   & A-02 &  9{,}15 & 28{,}2 \\
+    Treći uzorak   & B-01 & 10{,}90 & 33{,}6 \\
+    \midrule
+    \textbf{Ukupno} &     & \textbf{32{,}45} & \textbf{100{,}0} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Brojevi se u stupcu poravnavaju udesno i imaju jednak broj decimala. Tekst se poravnava ulijevo. Mjerna jedinica ide u zaglavlje stupca, a ne uz svaki broj. Prazna ćelija označava se crticom (--), a ne ostavlja praznom, kako bi bilo jasno da podatak nedostaje namjerno.
+
+Tablica koja se proteže preko više stranica mora ponoviti zaglavlje na svakoj stranici. Ako tablica ima više od desetak redaka i nije ključna za razumijevanje, premjesti je u prilog i u tekstu se pozovi na nju.
+
+\section{Jednadžbe}
+
+Jednadžbe se pišu u uređivaču jednadžbi, nikad kao slika i nikad kao obični tekst. Centrirane su, a broj jednadžbe ide desno u okruglim zagradama:
+
+\begin{equation}
+  \bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i
+  \label{jed:aritm}
+\end{equation}
+
+Na jednadžbu se upućuje brojem: ,,aritmetička sredina računa se prema izrazu~(\ref{jed:aritm})''. Svi simboli moraju biti objašnjeni odmah nakon jednadžbe: $\bar{x}$ je aritmetička sredina, $n$ broj mjerenja, a $x_i$ vrijednost $i$-tog mjerenja. Varijable se pišu kurzivom, a mjerne jedinice i oznake funkcija uspravno.
+
+\section{Programski kod}
+
+Kraći isječci koda umeću se u tekst u monospace pismu s numeriranim recima. Dulji kod (više od tridesetak redaka) ide u prilog ili u javni repozitorij na koji se u tekstu uputi poveznicom.
+
+\begin{lstlisting}[language=Python,caption={Primjer isječka koda s potpisom ispod},label={kod:primjer}]
+def aritmeticka_sredina(vrijednosti):
+    """Vraca aritmeticku sredinu liste brojeva."""
+    if not vrijednosti:
+        raise ValueError("Lista ne smije biti prazna.")
+    return sum(vrijednosti) / len(vrijednosti)
+\end{lstlisting}
+
+% =====================================================================
+\chapter{Citiranje i popis literature}
+% =====================================================================
+
+Svaka tvrdnja koja nije tvoja i nije općepoznata činjenica mora imati izvor. To vrijedi i za slike, tablice, podatke, definicije i programski kod preuzet s interneta.
+
+\section{Citiranje u tekstu}
+
+Predložak koristi \textbf{numerički sustav}: izvor se u tekstu označava brojem u uglatim zagradama, a broj odgovara mjestu izvora u popisu literature. Primjer jednog izvora \citep{clanak2023}, primjer više izvora odjednom \citep{knjiga2021,konferencija2022,disertacija2020}.
+
+Broj se stavlja prije interpunkcije na kraju rečenice. Ako se navodi ime autora, ono ide u tekst, a broj odmah iza njega: ,,Horvat i Kovačević \citep{clanak2023} pokazali su da\ldots''
+
+Doslovni navod dulji od jednog retka piše se pod navodnicima s obveznim brojem stranice, na primjer \citep[str.~118]{clanak2023}. Doslovne navode koristi štedljivo — u tehničkim radovima gotovo uvijek je bolje parafrazirati.
+
+\napomena{Ako tvoj fakultet propisuje autor–godina sustav (APA, Harvard), u preambuli zamijeni \texttt{\textbackslash bibliographystyle\{unsrtnat\}} s \texttt{\textbackslash bibliographystyle\{apalike\}} i koristi \texttt{\textbackslash citep} i \texttt{\textbackslash citet}. Sve ostalo ostaje isto.}
+
+\section{Popis literature}
+
+Popis se nalazi na kraju rada, prije priloga, i sadrži \emph{isključivo} izvore koji su citirani u tekstu. U numeričkom sustavu izvori su poredani redoslijedom prvog pojavljivanja, a ne abecedno.
+
+Oblik zapisa ovisi o vrsti izvora. U ugrađenoj bazi literature na početku ove datoteke nalaze se gotovi primjeri za knjigu, članak u časopisu, rad s konferencije, doktorsku disertaciju, mrežni izvor i normu — kopiraj onaj koji ti treba i zamijeni podatke.
+
+Opći okvir za oblikovanje bibliografskih navoda daje norma ISO~690 \citep{norma2019}, a mrežni izvori navode se kao u primjeru \citep{mreznistvor2024}. Kod mrežnih izvora uvijek se navodi datum pristupa jer se sadržaj mijenja. Ako izvor ima DOI, navodi se DOI umjesto poveznice. Wikipedia, blogovi i forumi nisu prihvatljivi izvori za tvrdnje u radu — služe samo kao polazište za pronalazak pravih izvora.
+
+\napomena{Redoslijed prevođenja u LaTeXu je: \texttt{pdflatex} $\rightarrow$ \texttt{bibtex} $\rightarrow$ \texttt{pdflatex} $\rightarrow$ \texttt{pdflatex}. Bez toga se popis literature ne pojavi, a na mjestu citata ostanu upitnici. Na Overleafu je dovoljno dva do tri puta pritisnuti \emph{Recompile}.}
+
+\section{Alati i plagiranje}
+
+Preporučuje se korištenje alata za upravljanje literaturom (Zotero, Mendeley, JabRef) jer sami generiraju BibTeX zapise i popis literature u traženom stilu.
+
+Radovi se provjeravaju sustavom za otkrivanje plagijata. Parafraza znači da si tekst napisao vlastitim riječima i drugačijom strukturom rečenice, uz navođenje izvora — zamjena nekoliko riječi sinonimima i dalje je plagijat. Ako si u izradi rada koristio generativne alate umjetne inteligencije, to se navodi u skladu s pravilima fakulteta.
+
+% =====================================================================
+\chapter{Prilozi i popis kratica}
+% =====================================================================
+
+U priloge ide sve što je važno za provjeru rada, ali bi prekinulo čitanje glavnog teksta: dulji programski kod, sirovi mjerni podaci, ankete, sheme, tehnički crteži, potvrde.
+
+Prilozi se označavaju slovima (Prilog A, Prilog B) i svaki počinje na novoj stranici s vlastitim naslovom. Slike i tablice unutar priloga numeriraju se s prefiksom priloga: Slika A.1, Tablica B.2. Svaki prilog mora biti spomenut u glavnom tekstu.
+
+Ako u radu koristiš više od desetak kratica, dodaj popis kratica iza popisa tablica. Popis je abecedno poredan i ima oblik:
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{L{2.6cm} L{10cm}}
+    \toprule
+    \rowcolor{fakplava}
+    \zaglavlje{Kratica} & \zaglavlje{Puni naziv} \\
+    \midrule
+    API & Application Programming Interface \\
+    DOI & Digital Object Identifier \\
+    UI  & umjetna inteligencija \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% =====================================================================
+\chapter{Prije predaje}
+\label{pog:predaja}
+% =====================================================================
+
+Provjeri redom:
+
+\begin{enumerate}[leftmargin=*,itemsep=3pt,topsep=4pt]
+  \item Sva poglavlja s uputama (1--6) su obrisana.
+  \item Na naslovnici su točni naslov, ime, JMBAG, mentor i datum.
+  \item Sažetak i Abstract imaju 150--250 riječi i po pet ključnih riječi.
+  \item Sadržaj, popis slika i popis tablica su osvježeni i brojevi stranica se poklapaju.
+  \item Svaka slika i tablica ima potpis, broj i spomenuta je u tekstu.
+  \item Svaka preuzeta slika, tablica i tvrdnja ima naveden izvor.
+  \item Svaki izvor iz popisa literature citiran je u tekstu i obrnuto.
+  \item Nema praznih naslova, ,,TODO'' bilješki ni neriješenih referenci (\texttt{??}).
+  \item Pravopis i gramatika su provjereni, a Abstract pročitan od nekoga tko dobro zna engleski.
+  \item Rad je izvezen u PDF i provjeren je izgled PDF-a, a ne samo izvorne datoteke.
+  \item Datoteka je imenovana prema pravilima fakulteta, na primjer:\\
+        \texttt{\small Prezime\_Ime\_diplomski.pdf}
+\end{enumerate}
+
+% =====================================================================
+%  LITERATURA
+% =====================================================================
+\cleardoublepage
+\addcontentsline{toc}{chapter}{Literatura}
+\bibliographystyle{unsrtnat}
+\bibliography{\jobname}
+
+% ---------------------------------------------------------------------
+%  ALTERNATIVA BEZ BibTeX-a
+%  Ako ne želiš pokretati bibtex ili ti je potrebno strogo hrvatsko
+%  oblikovanje navoda, zakomentiraj tri retka iznad i odkomentiraj
+%  blok ispod. Redoslijed \bibitem-a određuje brojeve [1], [2], ...
+% ---------------------------------------------------------------------
+% \begin{thebibliography}{99}
+% \bibitem{clanak2023} A. Horvat i M. Kovačević, ,,Naslov članka u znanstvenom časopisu'', \emph{Naziv časopisa}, sv. 42, br. 3, str. 115--129, 2023. DOI: 10.1000/primjer.2023.42.115.
+% \bibitem{knjiga2021} I. Prezime i A. Drugi, \emph{Naslov knjige: podnaslov ako postoji}, 3. izd. Zagreb: Naziv nakladnika, 2021.
+% \bibitem{konferencija2022} I. Novak, ,,Naslov rada s konferencije'', u \emph{Zbornik radova 15. međunarodne konferencije o nečemu}, Rijeka, 2022, str. 44--51.
+% \bibitem{disertacija2020} P. Babić, ,,Naslov doktorske disertacije'', doktorska disertacija, Sveučilište u Rijeci, Naziv fakulteta, 2020.
+% \bibitem{norma2019} ISO 690:2010 \emph{Information and documentation --- Guidelines for bibliographic references}, Geneva: ISO, 2010.
+% \bibitem{mreznistvor2024} Državni zavod za statistiku, ,,Naslov mrežne stranice ili dokumenta'', 2024. [Mrežno]. Dostupno: \url{https://www.primjer.hr/dokument} [pristupljeno 15. rujna 2026.].
+% \end{thebibliography}
+
+% =====================================================================
+%  PRILOZI
+% =====================================================================
+\appendix
+\renewcommand{\thechapter}{\Alph{chapter}}
+
+\chapter{Naziv prvog priloga}
+
+Sadržaj priloga. Primjerice cjeloviti programski kod, tablica sirovih mjerenja ili obrazac ankete.
+
+\chapter{Naziv drugog priloga}
+
+Svaki prilog počinje na novoj stranici i ima svoj naslov.
+
+\end{document}
