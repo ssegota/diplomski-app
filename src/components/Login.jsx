@@ -33,7 +33,6 @@ export default function Login({ config, onLogin }) {
               <GoogleLogin
                 onSuccess={(r) => login('/auth/google', { credential: r.credential })}
                 onError={() => setError('Google prijava nije uspjela. Pokušajte ponovno.')}
-                hosted_domain={config.allowedDomain}
                 text="signin_with" shape="rectangular" size="large" theme="outline"
               />
             </div>
