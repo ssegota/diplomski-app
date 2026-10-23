@@ -29,7 +29,7 @@
     <li>Tablica studenata</li>
     <li>Dodavanje studenata</li>
     <li>Detalj studenta
-      <ul><li>Status i ručno postavljanje (override) · Prijedlog i zadavanje teme · Predaje i povratne informacije · Podaci, poruka i bilješke · Individualni materijali · Povijest · Brisanje</li></ul></li>
+      <ul><li>Status i ručno postavljanje (override) · Prijedlog i zadavanje teme · Predaje i povratne informacije · Podaci, poruka i bilješke · Individualni materijali · Povijest · Brisanje · <b>Izvještaji komisije i potpisivanje</b></li></ul></li>
     <li>Predlošci i materijali</li>
     <li>Rokovi</li>
     <li>Poslani mailovi</li>
@@ -182,9 +182,13 @@
     <li>Kliknite <span class="ui">Spremi i obavijesti studenta</span>. Student dobiva email i vidi komentar uz predaju.</li>
   </ol>
   <p>Postojeću povratnu informaciju možete promijeniti poveznicom <span class="ui">Uredi povratnu informaciju</span> (student ponovno dobiva email). Predaja bez povratne informacije broji se kao „nepregledana” u filtru „Čeka mene”.</p>
+  <div class="box tip"><b>GitHub repozitorij je obavezan</b>
+    <p>Student kod <b>svake</b> predaje (i verzije za pregled i konačne verzije) mora unijeti poveznicu na GitHub repozitorij rada (<code>https://github.com/korisnik/repozitorij</code>); bez nje predaja se odbija – provjerava se i na poslužitelju. Poveznica se prikazuje uz svaku predaju, u zaglavlju detalja studenta i u mailu o predaji, a zadnja unesena poveznica nudi se studentu kod sljedeće predaje. Ista poveznica prikazuje se i na stranici za potpis izvještaja (4.8).</p>
+  </div>
+  <figure class="half"><img src="img/s-upload-gh.png"><figcaption><b>Slika 8.</b> Studentski obrazac za predaju s obaveznim GitHub repozitorijem.</figcaption></figure>
   <figure>
     <img src="img/a-feedback.png">
-    <figcaption><b>Slika 8.</b> Gornja predaja: otvoren obrazac za povratnu informaciju. Donja: već poslana povratna informacija s datotekom.</figcaption>
+    <figcaption><b>Slika 9.</b> Gornja predaja: otvoren obrazac za povratnu informaciju. Donja: već poslana povratna informacija s datotekom.</figcaption>
   </figure>
 </section>
 
@@ -199,20 +203,60 @@
       </ul>
       <p>Spremite gumbom <span class="ui">Spremi</span>.</p>
     </div>
-    <figure><img src="img/a-info.png"><figcaption><b>Slika 9.</b> Podaci i poruka.</figcaption></figure>
+    <figure><img src="img/a-info.png"><figcaption><b>Slika 10.</b> Podaci i poruka.</figcaption></figure>
   </div>
 
   <h2>4.5 Individualni materijali</h2>
   <p>Materijali dodani ovdje vidljivi su <b>samo tom studentu</b> (npr. literatura ili podaci za njegovu temu). Unesite naslov, opis i datoteku <b>ili</b> poveznicu (URL) pa kliknite <span class="ui">Dodaj</span>. Student dobiva email „Novi materijal: …”.</p>
-  <figure class="half"><img src="img/a-indiv-mat.png"><figcaption><b>Slika 10.</b> Individualni materijali.</figcaption></figure>
+  <figure class="half"><img src="img/a-indiv-mat.png"><figcaption><b>Slika 11.</b> Individualni materijali.</figcaption></figure>
 </section>
 
 <section class="chapter">
   <h2 style="margin-top:0">4.6 Povijest</h2>
   <p>Na dnu detalja je kronološki zapis svih promjena statusa: vrijeme, status, tko je promjenu napravio (<code>admin</code> ili <code>student</code>) i napomena.</p>
-  <figure><img src="img/a-history.png"><figcaption><b>Slika 11.</b> Povijest promjena.</figcaption></figure>
+  <figure><img src="img/a-history.png"><figcaption><b>Slika 12.</b> Povijest promjena.</figcaption></figure>
   <h2>4.7 Brisanje studenta</h2>
-  <p>Gumb <span class="ui">Obriši studenta</span> (gore desno u detalju) trajno briše studenta i <b>sve njegove predane datoteke i povratne datoteke</b>. Radnja se ne može poništiti; aplikacija traži potvrdu. Individualni materijali tog studenta ostaju na kartici „Predlošci i materijali” i treba ih obrisati zasebno.</p>
+  <p>Gumb <span class="ui">Obriši studenta</span> (gore desno u detalju) trajno briše studenta i <b>sve njegove predane datoteke i povratne datoteke</b>. Radnja se ne može poništiti; aplikacija traži potvrdu. Individualni materijali tog studenta ostaju na kartici „Predlošci i materijali” i treba ih obrisati zasebno. Brišu se i svi izvještaji komisije tog studenta (njihovi linkovi za potpis prestaju raditi).</p>
+</section>
+
+<section class="chapter">
+  <h2 style="margin-top:0">4.8 Izvještaji komisije i potpisivanje</h2>
+  <p>U detalju svakog studenta nalazi se okvir <span class="ui">Izvještaji komisije</span> (istaknut plavim rubom kad je student u statusu <span class="badge st-6">Ocjenjivanje komisije</span>). Tu učitavate izvještaj povjerenstva i dobivate <b>javni link za potpis</b> koji šaljete članovima povjerenstva – <b>za potpis nije potrebna prijava</b>.</p>
+  <h3>Učitavanje izvještaja</h3>
+  <ol class="steps">
+    <li>Upišite <b>naziv</b> (zadano „Izvještaj povjerenstva”) i odaberite <b>PDF izvještaja</b>.</li>
+    <li>Kliknite <span class="ui">Učitaj izvještaj</span>. Izvještaj mora biti <b>PDF s točno jednom stranicom</b> (do 4 MB) – drugačije datoteke aplikacija odbija.</li>
+    <li>Kliknite <span class="ui">Kopiraj link</span> i pošaljite ga članovima povjerenstva (mailom, porukom…).</li>
+  </ol>
+  <figure><img src="img/a-reports.png"><figcaption><b>Slika 13.</b> Izvještaj s jednim potpisom, javnim linkom i akcijama.</figcaption></figure>
+  <table>
+    <tr><th style="width:26%">Akcija</th><th>Što radi</th></tr>
+    <tr><td><span class="ui">Kopiraj link</span></td><td>Kopira javni link <code>…/potpis/&lt;oznaka&gt;</code> u međuspremnik.</td></tr>
+    <tr><td><span class="ui">Otvori</span></td><td>Otvara stranicu za potpis (kako je vide potpisnici).</td></tr>
+    <tr><td><span class="ui">PDF (potpisani)</span></td><td>Otvara trenutnu verziju PDF-a sa svim potpisima.</td></tr>
+    <tr><td><span class="ui">ukloni</span> (uz potpis)</td><td>Uklanja pojedini potpis (npr. pogrešan ili neovlašten); PDF se ponovno generira bez njega.</td></tr>
+    <tr><td><span class="ui">Obriši</span></td><td>Briše izvještaj i sve potpise; link trajno prestaje raditi.</td></tr>
+  </table>
+</section>
+
+<section class="chapter">
+  <h3 style="margin-top:0">Stranica za potpis (javni link)</h3>
+  <p>Na stranici su: pregled izvještaja, podaci o radu (student, vrsta rada, tema HR/EN), gumb <span class="ui">GitHub repozitorij</span> (zadnja poveznica koju je student unio) i gumb <span class="ui">Predani rad (PDF)</span> – preuzima <b>konačnu verziju</b> rada, a ako je nema, zadnju predaju. Potpisnik:</p>
+  <ol class="steps">
+    <li>upiše <b>ime i prezime</b>;</li>
+    <li><b>nacrta potpis</b> (mišem, prstom ili olovkom na tabletu/mobitelu) <b>ili učita sliku</b> potpisa – bijela pozadina slike automatski postaje prozirna;</li>
+    <li><b>klikne na izvještaj</b> na mjesto gdje ide potpis (npr. iznad linije za potpis) i po potrebi klizačem prilagodi veličinu;</li>
+    <li>klikne <span class="ui">Potpiši i spremi</span>.</li>
+  </ol>
+  <figure><img src="img/p-placing.png" style="max-width:88%"><figcaption><b>Slika 14.</b> Postavljanje potpisa: isprekidani okvir pokazuje gdje će potpis biti upečatan.</figcaption></figure>
+</section>
+
+<section class="chapter">
+  <p style="margin-top:0">Potpis se <b>upečatava u PDF</b> zajedno s imenom i datumom ispod njega, potpisana verzija <b>sprema se online</b>, a Vi dobivate <b>email</b> „Izvještaj potpisan: …” s poveznicom na potpisani PDF. Isti link mogu koristiti svi članovi povjerenstva – svaki potpis dodaje se na isti PDF (do 12 potpisa), a popis potpisa vidljiv je na stranici i u administraciji.</p>
+  <figure><img src="img/p-signed.png" style="max-width:88%"><figcaption><b>Slika 15.</b> Nakon potpisa: potpis je u PDF-u, popis potpisa je ažuriran.</figcaption></figure>
+  <div class="box warn"><b>Tko ima link, može potpisati</b>
+    <p>Link je dug i nasumičan (nije ga moguće pogoditi), ali svatko tko ga dobije može vidjeti izvještaj, preuzeti predani rad i dodati potpis. Šaljite ga samo članovima povjerenstva. O svakom potpisu dobivate mail; neovlašten potpis uklonite, a ako je link „procurio”, obrišite izvještaj i učitajte ga ponovno (dobiva novi link).</p>
+  </div>
 </section>
 
 <!-- 5 -->
@@ -231,7 +275,7 @@
   <p>Gumb <span class="ui">Obriši</span> uklanja materijal i njegovu datoteku.</p>
   <figure>
     <img src="img/a-materials.png" style="max-width:85%">
-    <figcaption><b>Slika 12.</b> Predlošci i materijali (administratorski prikaz).</figcaption>
+    <figcaption><b>Slika 16.</b> Predlošci i materijali (administratorski prikaz).</figcaption>
   </figure>
 </section>
 
@@ -247,7 +291,7 @@
   </ol>
   <figure>
     <img src="img/a-deadlines.png">
-    <figcaption><b>Slika 13.</b> Uređivanje rokova.</figcaption>
+    <figcaption><b>Slika 17.</b> Uređivanje rokova.</figcaption>
   </figure>
   <div class="box tip"><b>Pravilo od 2 tjedna</b>
     <p>Pravilo „konačna verzija najmanje 14 dana prije obrane” ugrađeno je u aplikaciju: studentu se iz željenog datuma obrane računa krajnji rok, a Vama u mailu o predaji konačne verzije stiže upozorenje ⚠ ako je do obrane manje od 14 dana. Vrijednost se mijenja u <code>shared/statuses.js</code> (<code>MIN_DAYS_BEFORE_DEFENSE</code>).</p>
@@ -266,7 +310,7 @@
   </table>
   <figure>
     <img src="img/a-outbox.png">
-    <figcaption><b>Slika 14.</b> Poslani mailovi s otvorenim tekstom jednog maila.</figcaption>
+    <figcaption><b>Slika 18.</b> Poslani mailovi s otvorenim tekstom jednog maila.</figcaption>
   </figure>
   <div class="box warn"><b>Ako na vrhu piše „SMTP nije konfiguriran”</b>
     <p>Mailovi se ne šalju dok se ne postave varijable <code>SMTP_HOST</code>, <code>SMTP_USER</code> i <code>SMTP_PASS</code> (poglavlje 11). Do tada je ova kartica jedini zapis obavijesti.</p>
@@ -288,6 +332,7 @@
     <tr><td>Vi ručno postavite status</td><td>→ odabrani status</td><td>Studentu: „Status rada: …” (može se isključiti)</td></tr>
     <tr><td>Vi dodate individualni materijal</td><td>bez promjene</td><td>Studentu: „Novi materijal: …”</td></tr>
     <tr><td>Vi spremite poruku uz „Pošalji i emailom”</td><td>bez promjene</td><td>Studentu: „Nova poruka mentora”</td></tr>
+    <tr><td>Netko potpiše izvještaj komisije (javni link)</td><td>bez promjene</td><td>Vama: „Izvještaj potpisan: naziv – student”</td></tr>
   </table>
   <p>Automatski prijelazi idu <b>samo naprijed</b> (npr. novi prijedlog teme ne vraća studenta koji već piše rad). Unatrag status možete pomaknuti samo ručno.</p>
   <p>Obavijesti „Vama” idu na adresu iz <code>NOTIFY_EMAIL</code>, a ako ona nije postavljena, na <code>ADMIN_EMAILS</code>.</p>
@@ -313,10 +358,10 @@
   <h1 class="chap"><span class="n">10</span>Test prijava (testni studentski račun)</h1>
   <p>Za isprobavanje studentskog dijela bez pravog studenta postoji <b>skrivena test prijava</b> za jedan fiksni račun: <code>test.student@unipu.hr</code>.</p>
   <ol class="steps">
-    <li>Otvorite <b>https://diplomski-fipu.netlify.app/?test</b> (u <b>privatnom/incognito</b> prozoru ako ste istovremeno prijavljeni kao admin).</li>
+    <li>Otvorite <b>https://diplomski-fipu.netlify.app/test</b> (radi i <code>/?test</code>) – u <b>privatnom/incognito</b> prozoru ako ste istovremeno prijavljeni kao admin.</li>
     <li>Ispod Google gumba pojavljuje se okvir <span class="ui">Test prijava</span>. Upišite lozinku i kliknite <span class="ui">Prijavi se kao test student</span>.</li>
   </ol>
-  <figure class="half"><img src="img/login-test.png"><figcaption><b>Slika 15.</b> Okvir za test prijavu (vidljiv samo uz <code>?test</code> u adresi).</figcaption></figure>
+  <figure class="half"><img src="img/login-test.png"><figcaption><b>Slika 19.</b> Okvir za test prijavu (vidljiv samo na <code>/test</code> ili uz <code>?test</code>).</figcaption></figure>
   <ul>
     <li>Lozinka je spremljena kao tajna varijabla <code>TEST_LOGIN_PASSWORD</code> na Netlifyju (Project configuration → Environment variables). Promijenite je naredbom <code>netlify env:set TEST_LOGIN_PASSWORD "nova" --secret --context production</code> i ponovnim deployem.</li>
     <li>Test račun je uvijek <b>student</b>, nikada administrator; drugi emailovi se ovim putem ne mogu prijaviti.</li>
