@@ -56,7 +56,12 @@ export async function verifyGoogle(credential) {
   const clientId = env('GOOGLE_CLIENT_ID');
   if (!clientId) throw Object.assign(new Error('Google prijava nije konfigurirana'), { status: 500 });
   const client = new OAuth2Client(clientId);
-  const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
+  let ticket;
+  try {
+    ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
+  } catch {
+    throw Object.assign(new Error('Neispravna Google prijava – pokušajte ponovno.'), { status: 401 });
+  }
   const p = ticket.getPayload();
   const domain = ALLOWED_DOMAIN();
   const hd = p.hd || '';
