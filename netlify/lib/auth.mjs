@@ -5,7 +5,7 @@ const env = (k, d = '') => process.env[k] ?? d;
 
 export const ALLOWED_DOMAIN = () => env('ALLOWED_DOMAIN', 'unipu.hr');
 export const adminEmails = () =>
-  env('ADMIN_EMAILS', 'sbaressis@unipu.hr').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+  env('ADMIN_EMAILS').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 export const isAdminEmail = (email) => adminEmails().includes(String(email).toLowerCase());
 export const devLoginEnabled = () => env('DEV_LOGIN') === 'true' && env('CONTEXT') !== 'production';
 

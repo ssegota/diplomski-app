@@ -5,7 +5,7 @@ import { api } from '../api.js';
 export default function Login({ config, onLogin }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [dev, setDev] = useState({ email: 'sbaressis@unipu.hr', name: '' });
+  const [dev, setDev] = useState({ email: config.devAdminEmail || '', name: '' });
   const [testPw, setTestPw] = useState('');
   const showTest = config.testLogin && new URLSearchParams(window.location.search).has('test');
 
@@ -22,7 +22,7 @@ export default function Login({ config, onLogin }) {
         <div className="kolegij">Fakultet informatike u Puli</div>
         <h1>Završni i diplomski radovi</h1>
         <p className="subtitle">Prijava teme, praćenje statusa, predaja rada, predlošci i upute – na jednom mjestu.</p>
-        <div className="autor">Mentor: <b>Sandi Baressi Šegota</b></div>
+        {config.mentorName && <div className="autor">Mentor: <b>{config.mentorName}</b></div>}
       </header>
       <div className="wrap">
         <div className="card login-card">
@@ -56,7 +56,7 @@ export default function Login({ config, onLogin }) {
               <div className="row">
                 <button className="btn" type="submit" disabled={busy}>Prijavi se</button>
                 <button className="link small" type="button" onClick={() => setDev({ email: 'ana.anic@unipu.hr', name: 'Ana Anić' })}>student primjer</button>
-                <button className="link small" type="button" onClick={() => setDev({ email: 'sbaressis@unipu.hr', name: '' })}>admin</button>
+                <button className="link small" type="button" onClick={() => setDev({ email: config.devAdminEmail || '', name: '' })}>admin</button>
               </div>
             </form>
           )}

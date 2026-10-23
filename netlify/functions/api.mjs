@@ -1,5 +1,5 @@
 import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
-import { issueSession, readSession, verifyGoogle, devLoginEnabled, testLoginEnabled, checkTestPassword, ALLOWED_DOMAIN } from '../lib/auth.mjs';
+import { issueSession, readSession, verifyGoogle, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
 import { sendMail, notifyAdmin, appUrl, mailConfigured } from '../lib/mail.mjs';
 
@@ -101,6 +101,8 @@ async function route(req, user, parts, method) {
       devLogin: devLoginEnabled(),
       testLogin: testLoginEnabled(),
       allowedDomain: ALLOWED_DOMAIN(),
+      mentorName: process.env.MENTOR_NAME || '',
+      devAdminEmail: devLoginEnabled() ? adminEmails()[0] || '' : undefined,
     });
   }
 

@@ -34,11 +34,16 @@ Za Google prijavu lokalno: u Google Cloud Console (OAuth klijent iz menzappa) do
 |---|---|
 | `SESSION_SECRET` | nasumični string (`openssl rand -hex 32`) za potpis sesije |
 | `GOOGLE_CLIENT_ID` | OAuth Client ID (isti kao menzapp) |
-| `ADMIN_EMAILS` | admin(i), zadano `sbaressis@unipu.hr` |
+| `ADMIN_EMAILS` | admin(i), odvojeni zarezom – **obavezno**; bez toga instanca nema administratora |
+| `MENTOR_NAME` | ime mentora prikazano na stranici za prijavu (neobavezno) |
 | `ALLOWED_DOMAIN` | `unipu.hr` (dopušta i poddomene, npr. `student.unipu.hr`) |
 | `APP_URL` | javni URL (za poveznice u mailovima) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | slanje maila (npr. Gmail + app lozinka). Bez njih se mailovi samo bilježe u „Poslani mailovi”. |
 | `NOTIFY_EMAIL` | kamo idu obavijesti adminu (zadano = `ADMIN_EMAILS`) |
+
+## Vlastita instanca (drugi mentori)
+
+Svaki mentor deploya **vlastitu** kopiju (vlastiti Netlify site i podaci). U kodu se ništa ne mijenja – samo varijable okruženja: `ADMIN_EMAILS`, `MENTOR_NAME`, `APP_URL`, vlastiti `GOOGLE_CLIENT_ID` i novi `SESSION_SECRET`. Detaljno: poglavlje 12 u `docs/Upute-za-administratora.pdf`.
 
 ## Deploy (nakon testiranja)
 

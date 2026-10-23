@@ -16,7 +16,7 @@
   </div>
   <div class="meta">
     <div class="url">diplomski-fipu.netlify.app</div>
-    Repozitorij: <b>github.com/ssegota/diplomski-app</b> (privatni)<br>
+    Repozitorij: <b><a href="https://github.com/ssegota/diplomski-app" style="color:#fff">github.com/ssegota/diplomski-app</a></b><br>
     Netlify projekt: <b>diplomski-fipu</b><br>
     Verzija uputa: listopad 2026.
   </div>
@@ -37,6 +37,7 @@
     <li>Preporučeni tijek rada sa studentom</li>
     <li>Test prijava (testni studentski račun)</li>
     <li>Tehničko održavanje</li>
+    <li>Vlastita instanca za druge mentore</li>
   </ol>
 </section>
 
@@ -341,7 +342,8 @@
     <tr><th style="width:32%">Varijabla</th><th>Opis</th></tr>
     <tr><td><code>SESSION_SECRET</code></td><td>Tajni ključ za potpis sesija. Promjena odjavljuje sve korisnike.</td></tr>
     <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>OAuth klijent (isti kao MarendApp/menzapp).</td></tr>
-    <tr><td><code>ADMIN_EMAILS</code></td><td><code>sbaressis@unipu.hr</code> (više adresa odvojiti zarezom).</td></tr>
+    <tr><td><code>ADMIN_EMAILS</code></td><td><code>sbaressis@unipu.hr</code> (više adresa odvojiti zarezom). <b>Obavezno</b> – bez nje instanca nema administratora.</td></tr>
+    <tr><td><code>MENTOR_NAME</code></td><td>Ime mentora na stranici za prijavu: <code>Sandi Baressi Šegota</code>.</td></tr>
     <tr><td><code>ALLOWED_DOMAIN</code></td><td><code>unipu.hr</code></td></tr>
     <tr><td><code>APP_URL</code></td><td>Poveznica u mailovima: <code>https://diplomski-fipu.netlify.app</code></td></tr>
     <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>MAIL_FROM</code></td><td>Slanje mailova (npr. <code>smtp.gmail.com</code>, 465, @unipu.hr adresa i Google <b>app lozinka</b>).</td></tr>
@@ -373,6 +375,46 @@
   <p>Aplikacija nema automatski backup. Podatke možete pregledati i preuzeti Netlify CLI-jem, npr. <code>netlify blobs:list diplomski</code> i <code>netlify blobs:get diplomski "student/ime@unipu.hr"</code>.</p>
   <h2>Upute u PDF-u</h2>
   <p>Izvori ovih uputa su u <code>docs/src/</code> (HTML + slike); PDF-ovi su u <code>docs/</code>.</p>
+</section>
+
+<!-- 12 -->
+<section class="chapter">
+  <h1 class="chap"><span class="n">12</span>Vlastita instanca za druge mentore</h1>
+  <p>Aplikaciju mogu koristiti i drugi mentori, ali <b>svaki mentor deploya vlastitu instancu</b>: vlastiti Netlify site, vlastitu bazu studenata i datoteka, vlastite obavijesti. Instance su potpuno odvojene – mentor ne vidi tuđe studente, niti itko drugi vidi njegove.</p>
+  <div class="box ok"><b>Izvorni kod</b>
+    <p><a href="https://github.com/ssegota/diplomski-app">https://github.com/ssegota/diplomski-app</a></p>
+  </div>
+  <div class="box tip"><b>U kodu se ništa ne mijenja – samo admin korisnik</b>
+    <p>Sve što je vezano uz osobu mentora postavlja se varijablama okruženja na Netlifyju. Ključna je <code>ADMIN_EMAILS</code> – vlastiti @unipu.hr email postaje administrator. Bez nje instanca nema administratora.</p>
+  </div>
+  <h2>Postupak</h2>
+  <ol class="steps">
+    <li><b>Kopija koda.</b> Napravite fork repozitorija na svoj GitHub račun (ili ga klonirajte i gurnite u vlastiti repozitorij).</li>
+    <li><b>Netlify site.</b> Na <a href="https://app.netlify.com">app.netlify.com</a>: <i>Add new project → Import an existing project → GitHub</i> → odaberite svoj repozitorij. Postavke builda čitaju se iz <code>netlify.toml</code> (ništa ne mijenjati). Zapišite adresu sitea, npr. <code>https://moj-mentor.netlify.app</code>.</li>
+    <li><b>Google prijava.</b> U <a href="https://console.cloud.google.com">Google Cloud Console</a> izradite vlastiti OAuth klijent (<i>Google Auth Platform → Clients → Create client → Web application</i>) i pod <b>Authorized JavaScript origins</b> dodajte adresu svog sitea. Kopirajte <b>Client ID</b>. (Tuđi Client ID ne možete koristiti jer ne možete dodati svoju adresu u tuđi klijent.)</li>
+    <li><b>Varijable okruženja</b> (<i>Project configuration → Environment variables</i>):
+      <table>
+        <tr><th style="width:34%">Varijabla</th><th>Vrijednost</th></tr>
+        <tr><td><code>ADMIN_EMAILS</code></td><td><b>Vaš</b> email, npr. <code>ime.prezime@unipu.hr</code></td></tr>
+        <tr><td><code>MENTOR_NAME</code></td><td>Vaše ime, npr. <code>Ime Prezime</code></td></tr>
+        <tr><td><code>APP_URL</code></td><td>Adresa Vašeg sitea</td></tr>
+        <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>Client ID iz koraka 3</td></tr>
+        <tr><td><code>SESSION_SECRET</code></td><td>Dugi nasumični niz (npr. <code>openssl rand -hex 32</code>), kao <i>secret</i></td></tr>
+        <tr><td><code>ALLOWED_DOMAIN</code></td><td><code>unipu.hr</code></td></tr>
+        <tr><td><code>SMTP_*</code>, <code>MAIL_FROM</code></td><td>Neobavezno – za slanje mailova (poglavlje 11)</td></tr>
+        <tr><td><code>TEST_STUDENT_EMAIL</code>, <code>TEST_LOGIN_PASSWORD</code></td><td>Neobavezno – test prijava (poglavlje 10)</td></tr>
+      </table>
+    </li>
+    <li><b>Deploy.</b> <i>Deploys → Trigger deploy</i> (ili push u repozitorij). Otvorite site, prijavite se svojim Google računom – trebali biste vidjeti administratorsko sučelje.</li>
+    <li><b>Predlošci.</b> Predlošci u <code>public/predlosci/</code> su zajednički FIPU predlošci; ako želite druge, zamijenite datoteke i pushajte.</li>
+  </ol>
+  <p>Isto putem Netlify CLI-ja (umjesto koraka 2, 4 i 5):</p>
+  <p><code>netlify sites:create --name moj-mentor</code><br>
+  <code>netlify env:set ADMIN_EMAILS ime.prezime@unipu.hr</code><br>
+  <code>netlify env:set MENTOR_NAME "Ime Prezime"</code><br>
+  <code>netlify env:set GOOGLE_CLIENT_ID "…"</code> · <code>netlify env:set APP_URL https://moj-mentor.netlify.app</code><br>
+  <code>netlify env:set SESSION_SECRET "$(openssl rand -hex 32)" --secret --context production</code><br>
+  <code>netlify deploy --build --prod</code></p>
 </section>
 
 </body>
