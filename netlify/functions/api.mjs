@@ -1,5 +1,5 @@
 import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
-import { issueSession, readSession, verifyGoogle, devLoginEnabled, ALLOWED_DOMAIN } from '../lib/auth.mjs';
+import { issueSession, readSession, verifyGoogle, devLoginEnabled, testLoginEnabled, checkTestPassword, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
 import { sendMail, notifyAdmin, appUrl, mailConfigured } from '../lib/mail.mjs';
 
@@ -99,6 +99,7 @@ async function route(req, user, parts, method) {
     return json({
       googleClientId: process.env.GOOGLE_CLIENT_ID || null,
       devLogin: devLoginEnabled(),
+      testLogin: testLoginEnabled(),
       allowedDomain: ALLOWED_DOMAIN(),
     });
   }
@@ -112,6 +113,9 @@ async function route(req, user, parts, method) {
       const email = str(body?.email, 200).toLowerCase();
       if (!email.includes('@')) throw new HttpError(400, 'Neispravan email.');
       identity = { email, name: str(body?.name, 200) || email.split('@')[0] };
+    } else if (b === 'test') {
+      if (!checkTestPassword(body?.password)) throw new HttpError(403, 'Neispravna lozinka.');
+      identity = { email: process.env.TEST_STUDENT_EMAIL, name: 'Test Student' };
     } else throw new HttpError(404, 'Nepoznato.');
 
     const session = issueSession(identity);
@@ -119,9 +123,10 @@ async function route(req, user, parts, method) {
       let s = await db.getStudent(identity.email);
       if (!s) {
         // Nepoznati student se sam registrira kao „Inicijalni kontakt”.
-        s = { ...newStudent(identity, 'student'), selfRegistered: true };
+        const isTest = b === 'test';
+        s = { ...newStudent(identity, 'student'), selfRegistered: !isTest, isTest };
         await db.saveStudent(s);
-        await notifyAdmin(`Novi student u aplikaciji: ${s.name}`,
+        if (!isTest) await notifyAdmin(`Novi student u aplikaciji: ${s.name}`,
           `${s.name} (${s.email}) prijavio/la se u aplikaciju i dodan/a je sa statusom „Inicijalni kontakt”.`);
       } else if (identity.name && (!s.name || s.name === s.email)) {
         s.name = identity.name; await db.saveStudent(s);

@@ -84,7 +84,7 @@ function StudentsTable({ students, setStudents, openStudent }) {
               const attnR = needsAttention(s);
               return (
                 <tr key={s.email} onClick={() => openStudent(s)} className="clickable">
-                  <td><b>{s.name}</b>{s.selfRegistered && statusIndex(s.status) === 0 && <span className="pill pill-new">novi</span>}<div className="muted small">{s.email}</div></td>
+                  <td><b>{s.name}</b>{s.selfRegistered && statusIndex(s.status) === 0 && <span className="pill pill-new">novi</span>}{s.isTest && <span className="pill pill-all">test</span>}<div className="muted small">{s.email}</div></td>
                   <td className="small">{STUDY_TYPES[s.type]}</td>
                   <td className="topic-cell">{s.topic?.titleHr || (s.proposal ? <i className="muted">Prijedlog: {s.proposal.titleHr || s.proposal.titleEn}</i> : <span className="muted">—</span>)}</td>
                   <td><StatusBadge status={s.status} />{attnR.length > 0 && <div className="attn-note">● {attnR.join(', ')}</div>}</td>

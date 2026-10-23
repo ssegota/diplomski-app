@@ -9,6 +9,14 @@ export const adminEmails = () =>
 export const isAdminEmail = (email) => adminEmails().includes(String(email).toLowerCase());
 export const devLoginEnabled = () => env('DEV_LOGIN') === 'true' && env('CONTEXT') !== 'production';
 
+// Skrivena test prijava: samo jedan fiksni studentski račun, uz lozinku.
+export const testLoginEnabled = () => Boolean(env('TEST_STUDENT_EMAIL') && env('TEST_LOGIN_PASSWORD'));
+export function checkTestPassword(password) {
+  const a = crypto.createHash('sha256').update(String(password || '')).digest();
+  const b = crypto.createHash('sha256').update(env('TEST_LOGIN_PASSWORD')).digest();
+  return testLoginEnabled() && !isAdminEmail(env('TEST_STUDENT_EMAIL')) && crypto.timingSafeEqual(a, b);
+}
+
 const SESSION_TTL_MS = 7 * 24 * 3600 * 1000;
 
 function secret() {

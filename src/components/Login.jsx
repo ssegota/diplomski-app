@@ -6,6 +6,8 @@ export default function Login({ config, onLogin }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [dev, setDev] = useState({ email: 'sbaressis@unipu.hr', name: '' });
+  const [testPw, setTestPw] = useState('');
+  const showTest = config.testLogin && new URLSearchParams(window.location.search).has('test');
 
   const login = async (path, body) => {
     setBusy(true); setError('');
@@ -38,6 +40,14 @@ export default function Login({ config, onLogin }) {
           ) : <div className="alert warn">Google prijava nije konfigurirana (GOOGLE_CLIENT_ID).</div>}
           {busy && <p className="muted center">Prijava u tijeku…</p>}
           {error && <div className="alert error">{error}</div>}
+
+          {showTest && (
+            <form className="form dev-login" onSubmit={(e) => { e.preventDefault(); login('/auth/test', { password: testPw }); }}>
+              <div className="muted small"><b>Test prijava</b> – testni studentski račun.</div>
+              <input type="password" value={testPw} onChange={(e) => setTestPw(e.target.value)} placeholder="lozinka" autoComplete="current-password" />
+              <button className="btn" type="submit" disabled={busy}>Prijavi se kao test student</button>
+            </form>
+          )}
 
           {config.devLogin && (
             <form className="form dev-login" onSubmit={(e) => { e.preventDefault(); login('/auth/dev', dev); }}>

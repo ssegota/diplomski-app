@@ -23,8 +23,14 @@ function getTransport() {
 // Šalje mail ako je SMTP konfiguriran; u svakom slučaju zapisuje ga u outbox
 // (vidljiv adminu), pa se obavijesti mogu testirati i lokalno bez SMTP-a.
 export async function sendMail({ to, subject, text }) {
-  const recipients = [].concat(to).filter(Boolean);
+  let recipients = [].concat(to).filter(Boolean);
   if (!recipients.length) return;
+  // Mailovi testnom studentu idu adminu, s oznakom [TEST].
+  const testEmail = env('TEST_STUDENT_EMAIL').toLowerCase();
+  if (testEmail && recipients.some((r) => r.toLowerCase() === testEmail)) {
+    recipients = [...new Set(recipients.map((r) => (r.toLowerCase() === testEmail ? adminEmails()[0] : r)))];
+    subject = `[TEST] ${subject}`;
+  }
   const body = `${text}\n\n—\nAplikacija: ${appUrl()}\n(Automatska obavijest – Završni i diplomski radovi, FIPU)`;
   const record = { to: recipients, subject, text: body, at: new Date().toISOString(), sent: false, error: null };
   if (mailConfigured()) {
