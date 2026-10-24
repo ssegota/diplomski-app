@@ -40,6 +40,7 @@ Za Google prijavu lokalno: u Google Cloud Console (OAuth klijent iz menzappa) do
 | `APP_URL` | javni URL (za poveznice u mailovima) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | slanje maila (npr. Gmail + app lozinka). Bez njih se mailovi samo bilježe u „Poslani mailovi”. |
 | `NOTIFY_EMAIL` | kamo idu obavijesti adminu (zadano = `ADMIN_EMAILS`) |
+| `MAIL_REPLY_TO` | Reply-To adresa u mailovima (npr. fakultetska adresa kad se šalje s osobnog Gmaila) |
 
 ## Vlastita instanca (drugi mentori)
 

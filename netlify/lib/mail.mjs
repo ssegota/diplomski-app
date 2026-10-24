@@ -37,6 +37,7 @@ export async function sendMail({ to, subject, text }) {
     try {
       await getTransport().sendMail({
         from: env('MAIL_FROM', env('SMTP_USER')),
+        replyTo: env('MAIL_REPLY_TO') || undefined,
         to: recipients.join(', '),
         subject,
         text: body,
