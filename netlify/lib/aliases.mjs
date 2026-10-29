@@ -48,6 +48,6 @@ export async function autoAliases(s) {
 
 // Popunjavanje za postojeće zapise (bez polja `aliases`); idempotentno.
 export async function backfillAliases(students) {
-  for (const s of students) if (await autoAliases(s)) await db.saveStudent(s);
+  for (const s of students) if (await autoAliases(s)) await db.saveStudent(s, { touch: false });
   return students;
 }

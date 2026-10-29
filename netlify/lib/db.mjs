@@ -24,7 +24,8 @@ async function listJSON(prefix) {
 }
 
 export const getStudent = (email) => store().get(sKey(email), { type: 'json' });
-export const saveStudent = (s) => store().setJSON(sKey(s.email), { ...s, updatedAt: new Date().toISOString() });
+export const saveStudent = (s, { touch = true } = {}) =>
+  store().setJSON(sKey(s.email), touch ? { ...s, updatedAt: new Date().toISOString() } : s);
 export const deleteStudent = (email) => store().delete(sKey(email));
 export const listStudents = () => listJSON('student/');
 
