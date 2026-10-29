@@ -2,6 +2,7 @@ import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEF
 import { issueSession, readSession, verifyGoogle, isAdminEmail, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
 import { emailOwner, setAliases, autoAliases, backfillAliases } from '../lib/aliases.mjs';
+import { fillPrijava, TEMPLATE_PATH } from '../lib/prijava.mjs';
 import { sendMail, notifyAdmin, appUrl, mailConfigured } from '../lib/mail.mjs';
 import { newToken, pageCount, rebuildSignedPdf, thesisUpload } from '../lib/reports.mjs';
 
@@ -347,7 +348,9 @@ async function route(req, user, parts, method) {
       return json({ ok: true });
     }
     if (!c && method === 'PATCH') {
-      for (const k of ['name', 'jmbag', 'program', 'notes', 'adminMessage', 'desiredDefenseDate']) if (k in body) s[k] = str(body[k]);
+      for (const k of ['name', 'jmbag', 'program', 'course', 'notes', 'adminMessage', 'desiredDefenseDate']) if (k in body) s[k] = str(body[k]);
+      if ('studyMode' in body) s.studyMode = ['redoviti', 'izvanredni'].includes(body.studyMode) ? body.studyMode : '';
+      if ('manualApplication' in body) s.manualApplication = Boolean(body.manualApplication);
       if (body.type && STUDY_TYPES[body.type]) s.type = body.type;
       if ('githubUrl' in body) s.githubUrl = str(body.githubUrl) ? githubFrom(body.githubUrl) : null;
       if (Array.isArray(body.aliases)) await setAliases(s, body.aliases.slice(0, 10).map((x) => str(x, 200)), HttpError.bind(null, 400));
@@ -365,6 +368,17 @@ async function route(req, user, parts, method) {
       await db.saveStudent(s);
       if (body.notify !== false) await mailStudentStatus(s, note);
       return json(s);
+    }
+    // Obrazac prijave teme popunjen podacima studenta (za ručnu prijavu).
+    if (c === 'prijava' && method === 'GET') {
+      const res = await fetch(new URL(TEMPLATE_PATH, req.url));
+      if (!res.ok) throw new HttpError(500, 'Predložak obrasca nije dostupan.');
+      const bytes = fillPrijava(await res.arrayBuffer(), s, { mentorName: process.env.MENTOR_NAME || '' });
+      const fname = `Prijava-teme-${s.name.normalize('NFD').replace(/[^\w]+/g, '-')}.docx`;
+      return new Response(bytes, { headers: {
+        'content-type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'content-disposition': `attachment; filename="${fname}"`, 'cache-control': 'no-store',
+      } });
     }
     if (c === 'reports' && method === 'GET') {
       const list = (await db.listReports()).filter((r) => r.studentEmail === s.email);
@@ -392,7 +406,7 @@ async function route(req, user, parts, method) {
       const note = str(body.note, 4000);
       if (!advance(s, 'tema_zadana', 'admin', note)) s.history.push({ status: s.status, at: now(), by: 'admin', note: `Tema ažurirana. ${note}`.trim() });
       await db.saveStudent(s);
-      await sendMail({
+      if (body.notify !== false) await sendMail({
         to: s.email, subject: 'Zadana je tema Vašeg rada',
         text: `Poštovani/a ${s.name},\n\nzadana je tema Vašeg rada:\n\nHR: ${s.topic.titleHr}\nEN: ${s.topic.titleEn}\n\n` +
           `Sljedeći korak: odaberite temu, mentora i predmet u Studomatu (Završetak studija) te potvrdite odabir u aplikaciji.` +

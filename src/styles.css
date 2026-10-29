@@ -161,6 +161,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--hawaii); ou
 .pill-final { background: var(--ok-bg); color: var(--ok); margin-left: 0; }
 .pill-all { background: #EEF1F3; color: var(--muted); }
 .pill-new { background: var(--warn-bg); color: var(--warn); }
+.pill-manual { background: var(--error-bg, #FDECEC); color: var(--error, #B42318); }
 .pill-admin { background: rgba(255,255,255,.2); color: #fff; }
 
 /* ---------- Tables ---------- */
@@ -184,6 +185,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--hawaii); ou
 .chip.attn.on { background: #D9822B; border-color: #D9822B; }
 .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .detail-head-side { align-items: flex-end; gap: 8px; }
+.manual-app { gap: 6px; align-items: flex-end; }
 
 /* ---------- Uploads / materials ---------- */
 .uploads, .mats { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }

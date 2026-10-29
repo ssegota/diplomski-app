@@ -54,16 +54,18 @@ function StudentsTable({ students, setStudents, openStudent }) {
   const [type, setType] = useState('');
   const counts = useMemo(() => Object.fromEntries(STATUSES.map((s) => [s.key, students.filter((x) => x.status === s.key).length])), [students]);
   const shown = students.filter((s) =>
-    (!filter || (filter === '__attn' ? needsAttention(s).length : s.status === filter)) &&
+    (!filter || (filter === '__attn' ? needsAttention(s).length : filter === '__manual' ? s.manualApplication : s.status === filter)) &&
     (!type || s.type === type) &&
     (!q || `${s.name} ${s.email} ${(s.aliases || []).join(' ')} ${s.jmbag} ${s.topic?.titleHr || ''} ${s.topic?.titleEn || ''}`.toLowerCase().includes(q.toLowerCase())));
   const attn = students.filter((s) => needsAttention(s).length).length;
+  const manual = students.filter((s) => s.manualApplication).length;
 
   return (
     <div className="stack">
       <div className="chips">
         <button className={!filter ? 'chip on' : 'chip'} onClick={() => setFilter('')}>Svi <b>{students.length}</b></button>
         <button className={filter === '__attn' ? 'chip on attn' : 'chip attn'} onClick={() => setFilter('__attn')}>Čeka mene <b>{attn}</b></button>
+        <button className={filter === '__manual' ? 'chip on' : 'chip'} onClick={() => setFilter('__manual')}>Ručna prijava <b>{manual}</b></button>
         {STATUSES.map((s, i) => (
           <button key={s.key} className={filter === s.key ? `chip on st-${i}` : 'chip'} onClick={() => setFilter(s.key)}>{s.label} <b>{counts[s.key]}</b></button>
         ))}
@@ -84,7 +86,7 @@ function StudentsTable({ students, setStudents, openStudent }) {
               const attnR = needsAttention(s);
               return (
                 <tr key={s.email} onClick={() => openStudent(s)} className="clickable">
-                  <td><b>{s.name}</b>{s.selfRegistered && statusIndex(s.status) === 0 && <span className="pill pill-new">novi</span>}{s.isTest && <span className="pill pill-all">test</span>}<div className="muted small">{s.email}</div>{s.aliases?.map((a) => <div key={a} className="muted small">{a}</div>)}</td>
+                  <td><b>{s.name}</b>{s.selfRegistered && statusIndex(s.status) === 0 && <span className="pill pill-new">novi</span>}{s.isTest && <span className="pill pill-all">test</span>}{s.manualApplication && <span className="pill pill-manual">ručna prijava</span>}<div className="muted small">{s.email}</div>{s.aliases?.map((a) => <div key={a} className="muted small">{a}</div>)}</td>
                   <td className="small">{STUDY_TYPES[s.type]}</td>
                   <td className="topic-cell">{s.topic?.titleHr || (s.proposal ? <i className="muted">Prijedlog: {s.proposal.titleHr || s.proposal.titleEn}</i> : <span className="muted">—</span>)}</td>
                   <td><StatusBadge status={s.status} />{attnR.length > 0 && <div className="attn-note">● {attnR.join(', ')}</div>}</td>

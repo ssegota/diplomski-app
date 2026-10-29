@@ -40,7 +40,7 @@ function FeedbackForm({ student, upload, onSaved }) {
 function ProfileForm({ s, path, onSaved, onCancel }) {
   const [f, setF] = useState({
     name: s.name || '', aliases: (s.aliases || []).join(', '), jmbag: s.jmbag || '', type: s.type, program: s.program || '',
-    desiredDefenseDate: s.desiredDefenseDate || '', githubUrl: s.githubUrl || '',
+    desiredDefenseDate: s.desiredDefenseDate || '', githubUrl: s.githubUrl || '', studyMode: s.studyMode || '', course: s.course || '',
   });
   const a = useAction();
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -56,7 +56,12 @@ function ProfileForm({ s, path, onSaved, onCancel }) {
           <input value={f.aliases} onChange={set('aliases')} placeholder="npr. ihorvat@student.unipu.hr" /></label>
         <label>JMBAG<input value={f.jmbag} onChange={set('jmbag')} /></label>
         <label>Vrsta rada<select value={f.type} onChange={set('type')}>{Object.entries(STUDY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-        <label>Studij<input value={f.program} onChange={set('program')} /></label>
+        <label>Status studenta<select value={f.studyMode} onChange={set('studyMode')}>
+          <option value="">—</option><option value="redoviti">Redoviti</option><option value="izvanredni">Izvanredni</option>
+        </select></label>
+        <label>Studij<input list="programs" value={f.program} onChange={set('program')} /></label>
+        <datalist id="programs"><option value="Informatika" /><option value="Nastavni smjer informatike" /></datalist>
+        <label>Kolegij (za obrazac prijave teme)<input value={f.course} onChange={set('course')} /></label>
         <label>Željeni datum obrane<input type="date" value={f.desiredDefenseDate} onChange={set('desiredDefenseDate')} /></label>
         <label>GitHub repozitorij<input value={f.githubUrl} onChange={set('githubUrl')} placeholder="https://github.com/korisnik/repozitorij" /></label>
       </div>
@@ -67,6 +72,29 @@ function ProfileForm({ s, path, onSaved, onCancel }) {
         <button type="button" className="btn" onClick={onCancel}>Odustani</button>
       </div>
     </form>
+  );
+}
+
+// Preuzima obrazac prijave teme popunjen podacima studenta.
+async function downloadPrijava(s) {
+  const buf = await api(`/students/${enc(s.email)}/prijava`);
+  const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: `Prijava-teme-${s.name}.docx` });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function ManualApplication({ s, path, onSaved }) {
+  const a = useAction();
+  return (
+    <div className="stack manual-app">
+      <label className="check"><input type="checkbox" checked={Boolean(s.manualApplication)} disabled={a.busy}
+        onChange={(e) => a.run(async () => onSaved(await api(path, { method: 'PATCH', body: { manualApplication: e.target.checked } })))} /> Potrebna ručna prijava</label>
+      <button className={`btn small ${s.manualApplication ? 'primary' : ''}`} disabled={a.busy}
+        onClick={() => a.run(() => downloadPrijava(s))}>Obrazac prijave teme (.docx)</button>
+      <a className="small" href="/predlosci/Obrazac-prijava-teme.docx" download>prazan obrazac</a>
+      <Msg error={a.error} />
+    </div>
   );
 }
 
@@ -118,6 +146,7 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
         <div className="stack detail-head-side">
           <StatusBadge status={s.status} />
           <button className="btn small" onClick={() => setEditing(true)}>Uredi podatke</button>
+          <ManualApplication s={s} path={path} onSaved={update} />
         </div>
       </div>
       )}
@@ -158,6 +187,9 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
             <div className="row">
               <button className="btn primary" disabled={tp.busy} onClick={() => tp.run(async () => update(await api(`${path}/assign-topic`, { method: 'POST', body: { ...topic, note: topicNote } })), 'Tema zadana, student obaviješten.')}>
                 Zadaj temu i obavijesti
+              </button>
+              <button className="btn" disabled={tp.busy} onClick={() => tp.run(async () => update(await api(`${path}/assign-topic`, { method: 'POST', body: { ...topic, note: topicNote, notify: false } })), 'Tema zadana (bez obavijesti studentu).')}>
+                Zadaj temu bez obavijesti
               </button>
               <button className="btn" disabled={tp.busy} onClick={() => tp.run(async () => update(await api(path, { method: 'PATCH', body: { topic } })), 'Spremljeno (bez obavijesti i promjene statusa).')}>
                 Samo spremi
