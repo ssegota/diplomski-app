@@ -1,6 +1,7 @@
 import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
-import { issueSession, readSession, verifyGoogle, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
+import { issueSession, readSession, verifyGoogle, isAdminEmail, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
+import { emailOwner, setAliases, autoAliases, backfillAliases } from '../lib/aliases.mjs';
 import { sendMail, notifyAdmin, appUrl, mailConfigured } from '../lib/mail.mjs';
 import { newToken, pageCount, rebuildSignedPdf, thesisUpload } from '../lib/reports.mjs';
 
@@ -132,6 +133,12 @@ async function route(req, user, parts, method) {
       identity = { email: process.env.TEST_STUDENT_EMAIL, name: 'Test Student' };
     } else throw new HttpError(404, 'Nepoznato.');
 
+    // Prijava s alternativnim emailom otvara isti zapis (sesija nosi primarni email).
+    if (!isAdminEmail(identity.email)) {
+      let owner = await emailOwner(identity.email);
+      if (!owner) { await backfillAliases(await db.listStudents()); owner = await emailOwner(identity.email); }
+      if (owner) identity.email = owner;
+    }
     const session = issueSession(identity);
     if (session.user.role === 'student') {
       let s = await db.getStudent(identity.email);
@@ -139,6 +146,7 @@ async function route(req, user, parts, method) {
         // Nepoznati student se sam registrira kao „Inicijalni kontakt”.
         const isTest = b === 'test';
         s = { ...newStudent(identity, 'student'), selfRegistered: !isTest, isTest };
+        await autoAliases(s);
         await db.saveStudent(s);
         if (!isTest) await notifyAdmin(`Novi student u aplikaciji: ${s.name}`,
           `${s.name} (${s.email}) prijavio/la se u aplikaciju i dodan/a je sa statusom „Inicijalni kontakt”.`);
@@ -310,14 +318,16 @@ async function route(req, user, parts, method) {
   requireAdmin();
 
   if (a === 'students' && !b && method === 'GET') {
-    const list = await db.listStudents();
+    const list = await backfillAliases(await db.listStudents());
     return json(list.sort((x, y) => (y.updatedAt || '').localeCompare(x.updatedAt || '')));
   }
   if (a === 'students' && !b && method === 'POST') {
     const email = str(body.email, 200).toLowerCase();
     if (!email.includes('@')) throw new HttpError(400, 'Email je obavezan.');
-    if (await db.getStudent(email)) throw new HttpError(409, 'Student s tim emailom već postoji.');
+    const owner = await emailOwner(email);
+    if (owner) throw new HttpError(409, owner === email ? 'Student s tim emailom već postoji.' : `Taj email je alternativni email studenta ${owner}.`);
     const s = newStudent({ email, name: str(body.name, 200), jmbag: str(body.jmbag, 20), type: body.type, program: str(body.program, 200) }, 'admin');
+    await autoAliases(s);
     if (body.status && STATUS_KEYS.includes(body.status) && body.status !== s.status) setStatus(s, body.status, 'admin', 'Početni status');
     await db.saveStudent(s);
     return json(s, 201);
@@ -332,12 +342,15 @@ async function route(req, user, parts, method) {
     if (!c && method === 'DELETE') {
       for (const u of s.uploads || []) { await db.deleteFile(u.fileId); if (u.feedbackFileId) await db.deleteFile(u.feedbackFileId); }
       for (const r of (await db.listReports()).filter((r) => r.studentEmail === email)) await db.deleteReport(r);
+      for (const al of s.aliases || []) await db.deleteAlias(al);
       await db.deleteStudent(email);
       return json({ ok: true });
     }
     if (!c && method === 'PATCH') {
       for (const k of ['name', 'jmbag', 'program', 'notes', 'adminMessage', 'desiredDefenseDate']) if (k in body) s[k] = str(body[k]);
       if (body.type && STUDY_TYPES[body.type]) s.type = body.type;
+      if ('githubUrl' in body) s.githubUrl = str(body.githubUrl) ? githubFrom(body.githubUrl) : null;
+      if (Array.isArray(body.aliases)) await setAliases(s, body.aliases.slice(0, 10).map((x) => str(x, 200)), HttpError.bind(null, 400));
       if ('topic' in body) s.topic = body.topic ? { ...topicFrom(body.topic), assignedAt: s.topic?.assignedAt || now() } : null;
       await db.saveStudent(s);
       if (body.notifyMessage && s.adminMessage) {

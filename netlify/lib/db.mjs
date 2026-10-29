@@ -28,6 +28,12 @@ export const saveStudent = (s) => store().setJSON(sKey(s.email), { ...s, updated
 export const deleteStudent = (email) => store().delete(sKey(email));
 export const listStudents = () => listJSON('student/');
 
+// Alternativni emailovi: alias/<email> → { email: <primarni email> }.
+const aKey = (email) => `alias/${email.toLowerCase()}`;
+export const getAlias = async (email) => (await store().get(aKey(email), { type: 'json' }))?.email || null;
+export const saveAlias = (alias, email) => store().setJSON(aKey(alias), { email: email.toLowerCase() });
+export const deleteAlias = (alias) => store().delete(aKey(alias));
+
 export const getMaterial = (id) => store().get(`material/${id}`, { type: 'json' });
 export const saveMaterial = (m) => store().setJSON(`material/${m.id}`, m);
 export const deleteMaterial = (id) => store().delete(`material/${id}`);

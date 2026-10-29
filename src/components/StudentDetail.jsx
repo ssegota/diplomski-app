@@ -36,6 +36,40 @@ function FeedbackForm({ student, upload, onSaved }) {
   );
 }
 
+// Osnovni podaci studenta; otvara se gumbom „Uredi podatke” u zaglavlju.
+function ProfileForm({ s, path, onSaved, onCancel }) {
+  const [f, setF] = useState({
+    name: s.name || '', aliases: (s.aliases || []).join(', '), jmbag: s.jmbag || '', type: s.type, program: s.program || '',
+    desiredDefenseDate: s.desiredDefenseDate || '', githubUrl: s.githubUrl || '',
+  });
+  const a = useAction();
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  return (
+    <form className="form" onSubmit={(e) => {
+      e.preventDefault();
+      a.run(async () => onSaved(await api(path, { method: 'PATCH', body: { ...f, aliases: f.aliases.split(/[\s,;]+/).filter(Boolean) } })));
+    }}>
+      <div className="grid2">
+        <label>Ime i prezime<input required value={f.name} onChange={set('name')} /></label>
+        <label>Email (primarni)<input value={s.email} disabled /></label>
+        <label>Alternativni emailovi (odvojeni zarezom) – prijava s njima otvara isti račun
+          <input value={f.aliases} onChange={set('aliases')} placeholder="npr. ihorvat@student.unipu.hr" /></label>
+        <label>JMBAG<input value={f.jmbag} onChange={set('jmbag')} /></label>
+        <label>Vrsta rada<select value={f.type} onChange={set('type')}>{Object.entries(STUDY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+        <label>Studij<input value={f.program} onChange={set('program')} /></label>
+        <label>Željeni datum obrane<input type="date" value={f.desiredDefenseDate} onChange={set('desiredDefenseDate')} /></label>
+        <label>GitHub repozitorij<input value={f.githubUrl} onChange={set('githubUrl')} placeholder="https://github.com/korisnik/repozitorij" /></label>
+      </div>
+      <p className="muted small">Naslov i opis rada uređuju se u kartici „Zadana tema” (gumb „Samo spremi” ne šalje obavijest).</p>
+      <Msg error={a.error} />
+      <div className="row">
+        <button className="btn primary" disabled={a.busy}>Spremi podatke</button>
+        <button type="button" className="btn" onClick={onCancel}>Odustani</button>
+      </div>
+    </form>
+  );
+}
+
 export default function StudentDetail({ student: initial, students, onBack, onChange }) {
   const [s, setS] = useState(initial);
   const update = (next) => { setS(next); onChange(next); };
@@ -50,7 +84,8 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
   const [topicNote, setTopicNote] = useState('');
   const tp = useAction();
 
-  const [info, setInfo] = useState({ name: s.name, jmbag: s.jmbag, type: s.type, program: s.program, desiredDefenseDate: s.desiredDefenseDate, adminMessage: s.adminMessage, notes: s.notes });
+  const [editing, setEditing] = useState(false);
+  const [info, setInfo] = useState({ adminMessage: s.adminMessage, notes: s.notes });
   const [notifyMsg, setNotifyMsg] = useState(false);
   const inf = useAction();
   const setI = (k) => (e) => setInfo({ ...info, [k]: e.target.value });
@@ -67,15 +102,25 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
         <button className="link" onClick={onBack}>← Svi studenti</button>
         <button className="btn small danger" onClick={del}>Obriši studenta</button>
       </div>
+      {editing ? (
+        <section className="card">
+          <h2>Uredi podatke – {s.name}</h2>
+          <ProfileForm s={s} path={path} onSaved={(next) => { update(next); setEditing(false); }} onCancel={() => setEditing(false)} />
+        </section>
+      ) : (
       <div className="card detail-head">
         <div>
           <h2 style={{ margin: 0 }}>{s.name}</h2>
-          <div className="muted">{s.email}{s.jmbag && ` · JMBAG ${s.jmbag}`} · {STUDY_TYPES[s.type]}{s.program && ` · ${s.program}`}</div>
+          <div className="muted">{s.email}{s.aliases?.length > 0 && ` (i ${s.aliases.join(', ')})`}{s.jmbag && ` · JMBAG ${s.jmbag}`} · {STUDY_TYPES[s.type]}{s.program && ` · ${s.program}`}</div>
           {s.githubUrl && <div className="small">GitHub: <a href={s.githubUrl} target="_blank" rel="noreferrer">{s.githubUrl.replace('https://github.com/', '')}</a></div>}
           {s.desiredDefenseDate && <div className="small">Željeni datum obrane: <b>{fmtDate(s.desiredDefenseDate)}</b> (konačna verzija do {fmtDate(new Date(new Date(s.desiredDefenseDate) - MIN_DAYS_BEFORE_DEFENSE * 86400000).toISOString())})</div>}
         </div>
-        <StatusBadge status={s.status} />
+        <div className="stack detail-head-side">
+          <StatusBadge status={s.status} />
+          <button className="btn small" onClick={() => setEditing(true)}>Uredi podatke</button>
+        </div>
       </div>
+      )}
 
       <div className="cols">
         <section className="card form">
@@ -134,14 +179,7 @@ export default function StudentDetail({ student: initial, students, onBack, onCh
 
       <div className="cols">
         <section className="card form">
-          <h2>Podaci i poruka</h2>
-          <div className="grid2">
-            <label>Ime i prezime<input value={info.name} onChange={setI('name')} /></label>
-            <label>JMBAG<input value={info.jmbag} onChange={setI('jmbag')} /></label>
-            <label>Vrsta rada<select value={info.type} onChange={setI('type')}>{Object.entries(STUDY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-            <label>Studij<input value={info.program} onChange={setI('program')} /></label>
-            <label>Željeni datum obrane<input type="date" value={info.desiredDefenseDate} onChange={setI('desiredDefenseDate')} /></label>
-          </div>
+          <h2>Poruka i bilješke</h2>
           <label>Poruka studentu (prikazuje se na vrhu njegove stranice)<textarea rows={3} value={info.adminMessage} onChange={setI('adminMessage')} /></label>
           <label className="check"><input type="checkbox" checked={notifyMsg} onChange={(e) => setNotifyMsg(e.target.checked)} /> Pošalji poruku i emailom</label>
           <label>Privatne bilješke (student ih ne vidi)<textarea rows={3} value={info.notes} onChange={setI('notes')} /></label>
