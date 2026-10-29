@@ -1,4 +1,4 @@
-import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
+import { STATUS_KEYS, statusIndex, statusLabel, STUDY_TYPES, MIN_DAYS_BEFORE_DEFENSE, COURSES } from '../../shared/statuses.js';
 import { issueSession, readSession, verifyGoogle, isAdminEmail, devLoginEnabled, testLoginEnabled, checkTestPassword, adminEmails, ALLOWED_DOMAIN } from '../lib/auth.mjs';
 import * as db from '../lib/db.mjs';
 import { emailOwner, setAliases, autoAliases, backfillAliases } from '../lib/aliases.mjs';
@@ -348,7 +348,7 @@ async function route(req, user, parts, method) {
       return json({ ok: true });
     }
     if (!c && method === 'PATCH') {
-      for (const k of ['name', 'jmbag', 'program', 'course', 'notes', 'adminMessage', 'desiredDefenseDate']) if (k in body) s[k] = str(body[k]);
+      for (const k of ['name', 'jmbag', 'program', 'notes', 'adminMessage', 'desiredDefenseDate']) if (k in body) s[k] = str(body[k]);
       if ('studyMode' in body) s.studyMode = ['redoviti', 'izvanredni'].includes(body.studyMode) ? body.studyMode : '';
       if ('manualApplication' in body) s.manualApplication = Boolean(body.manualApplication);
       if (body.type && STUDY_TYPES[body.type]) s.type = body.type;
@@ -371,9 +371,13 @@ async function route(req, user, parts, method) {
     }
     // Obrazac prijave teme popunjen podacima studenta (za ručnu prijavu).
     if (c === 'prijava' && method === 'GET') {
+      const course = COURSES.find((x) => x.name === new URL(req.url).searchParams.get('course'));
+      if (!course) throw new HttpError(400, 'Odaberite kolegij.');
+      if (course.type !== s.type) throw new HttpError(400,
+        `Kolegij ${course.name} je za ${course.type === 'zavrsni' ? 'prijediplomski studij (završni rad)' : 'diplomski studij (diplomski rad)'}, a ${s.name} piše ${STUDY_TYPES[s.type].toLowerCase()}.`);
       const res = await fetch(new URL(TEMPLATE_PATH, req.url));
       if (!res.ok) throw new HttpError(500, 'Predložak obrasca nije dostupan.');
-      const bytes = fillPrijava(await res.arrayBuffer(), s, { mentorName: process.env.MENTOR_NAME || '' });
+      const bytes = fillPrijava(await res.arrayBuffer(), s, { mentorName: process.env.MENTOR_NAME || '', course: course.name });
       const fname = `Prijava-teme-${s.name.normalize('NFD').replace(/[^\w]+/g, '-')}.docx`;
       return new Response(bytes, { headers: {
         'content-type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

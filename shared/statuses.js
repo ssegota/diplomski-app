@@ -22,5 +22,17 @@ export const statusLabel = (key) => STATUSES.find((s) => s.key === key)?.label ?
 
 export const STUDY_TYPES = { zavrsni: 'Završni rad', diplomski: 'Diplomski rad' };
 
+// Obrazac prijave teme: studij prema vrsti rada i kolegiji (s vrstom rada kojoj pripadaju).
+export const PROGRAM_BY_TYPE = {
+  zavrsni: 'Sveučilišni prijediplomski studij Informatike',
+  diplomski: 'Sveučilišni diplomski studij informatike',
+};
+export const COURSES = [
+  { name: 'Mrežni sustavi', type: 'zavrsni' },
+  { name: 'Operacijski sustavi', type: 'zavrsni' },
+  { name: 'Robotika', type: 'diplomski' },
+  { name: 'Internet stvari', type: 'diplomski' },
+];
+
 // Minimalni razmak između predaje konačne verzije i željenog datuma obrane.
 export const MIN_DAYS_BEFORE_DEFENSE = 14;

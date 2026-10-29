@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, fmtDate, fmtDateTime } from '../api.js';
-import { STATUSES, STUDY_TYPES, statusLabel, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
+import { STATUSES, STUDY_TYPES, COURSES, statusLabel, MIN_DAYS_BEFORE_DEFENSE } from '../../shared/statuses.js';
 import { StatusStepper, StatusBadge, TopicView, TopicFields, FilePicker, Progress, DownloadButton, Msg, useAction, useUploader } from './common.jsx';
 import { UploadList } from './StudentDashboard.jsx';
 import Materials from './Materials.jsx';
@@ -40,7 +40,7 @@ function FeedbackForm({ student, upload, onSaved }) {
 function ProfileForm({ s, path, onSaved, onCancel }) {
   const [f, setF] = useState({
     name: s.name || '', aliases: (s.aliases || []).join(', '), jmbag: s.jmbag || '', type: s.type, program: s.program || '',
-    desiredDefenseDate: s.desiredDefenseDate || '', githubUrl: s.githubUrl || '', studyMode: s.studyMode || '', course: s.course || '',
+    desiredDefenseDate: s.desiredDefenseDate || '', githubUrl: s.githubUrl || '', studyMode: s.studyMode || '',
   });
   const a = useAction();
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -61,7 +61,6 @@ function ProfileForm({ s, path, onSaved, onCancel }) {
         </select></label>
         <label>Studij<input list="programs" value={f.program} onChange={set('program')} /></label>
         <datalist id="programs"><option value="Informatika" /><option value="Nastavni smjer informatike" /></datalist>
-        <label>Kolegij (za obrazac prijave teme)<input value={f.course} onChange={set('course')} /></label>
         <label>Željeni datum obrane<input type="date" value={f.desiredDefenseDate} onChange={set('desiredDefenseDate')} /></label>
         <label>GitHub repozitorij<input value={f.githubUrl} onChange={set('githubUrl')} placeholder="https://github.com/korisnik/repozitorij" /></label>
       </div>
@@ -76,8 +75,8 @@ function ProfileForm({ s, path, onSaved, onCancel }) {
 }
 
 // Preuzima obrazac prijave teme popunjen podacima studenta.
-async function downloadPrijava(s) {
-  const buf = await api(`/students/${enc(s.email)}/prijava`);
+async function downloadPrijava(s, course) {
+  const buf = await api(`/students/${enc(s.email)}/prijava?course=${enc(course)}`);
   const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
   const a = Object.assign(document.createElement('a'), { href: url, download: `Prijava-teme-${s.name}.docx` });
   document.body.appendChild(a); a.click(); a.remove();
@@ -86,12 +85,21 @@ async function downloadPrijava(s) {
 
 function ManualApplication({ s, path, onSaved }) {
   const a = useAction();
+  const [picking, setPicking] = useState(false);
   return (
     <div className="stack manual-app">
       <label className="check"><input type="checkbox" checked={Boolean(s.manualApplication)} disabled={a.busy}
         onChange={(e) => a.run(async () => onSaved(await api(path, { method: 'PATCH', body: { manualApplication: e.target.checked } })))} /> Potrebna ručna prijava</label>
-      <button className={`btn small ${s.manualApplication ? 'primary' : ''}`} disabled={a.busy}
-        onClick={() => a.run(() => downloadPrijava(s))}>Obrazac prijave teme (.docx)</button>
+      {picking ? (
+        <select autoFocus value="" disabled={a.busy} onBlur={() => !a.busy && setPicking(false)}
+          onChange={(e) => { const c = e.target.value; a.run(async () => { await downloadPrijava(s, c); setPicking(false); }); }}>
+          <option value="" disabled>Odaberite kolegij…</option>
+          {COURSES.map((c) => <option key={c.name} value={c.name}>{c.name} ({c.type === 'zavrsni' ? 'prijediplomski' : 'diplomski'})</option>)}
+        </select>
+      ) : (
+        <button className={`btn small ${s.manualApplication ? 'primary' : ''}`} disabled={a.busy}
+          onClick={() => { a.setError(''); setPicking(true); }}>Obrazac prijave teme (.docx)</button>
+      )}
       <a className="small" href="/predlosci/Obrazac-prijava-teme.docx" download>prazan obrazac</a>
       <Msg error={a.error} />
     </div>
